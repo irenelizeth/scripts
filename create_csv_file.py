@@ -6,6 +6,21 @@ from optparse import OptionParser
 
 Usage = """%prog [options] <folder_name>
 	<folder_name>: name of the folder containing the results per site of the application's energy usage
+
+	the structure of the folder given as input should follow the following structure:
+
+	parent_folder/
+		subfolder_0/
+			results_file_0
+			subjects_file_0
+		subfolder_1/
+			results_file_1
+			subjects_file_1
+		...
+		subfolder_N/
+			results_file_N
+			subjects_file_N
+
 """
 
 parser = OptionParser()
@@ -43,7 +58,9 @@ def createCSVFile(dir_name):
 			for line in file_r:
 				listR.append(line[:-1])
 
-	name_file = os.path.join(dir_name,'combinedFile.csv')
+	cSite =  os.path.basename(dir_name)
+
+	name_file = os.path.join(dir_name,'combinedFile-'+cSite+'.csv')
 
 	with open(name_file,'wb') as csvfile:
 		csvwriter = csv.writer(csvfile)
