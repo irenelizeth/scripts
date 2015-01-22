@@ -32,17 +32,12 @@ listSignificantDifferentAlternatives = function(){
 			print(paste(sd,": ",kw_data[3]$p.value))
 			# do multicomparison analysis on listed site:
 			kmc <- kruskalmc(eu~alternative, data=data_name, probs = 0.05)
-			#fileMC <- file(paste(sd,"-","kw-mc.csv"))
-			print(kmc)
+			x <- data.frame(kmc)
+			file_dest = paste(wd,"/",sd,"/","kw-mc.csv",sep="")
+			write.table(x, file=file_dest, sep=",")			
 		}
 
-			#close(fileMC)
-			#print(kmc)
-			#print("\n")
 	
 	}
 
 }
-
-#kmc <- kruskalmc(eu~alternative, data=data_name, probs = 0.05) # multiple-comparison t
-
