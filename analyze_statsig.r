@@ -1,12 +1,9 @@
 # clean out the workspace
 rm(list=ls())
 
-dir_name = "euDATA_jfreechart_jcf109_merge/"
+dir_name = getwd()
 
-#change to the new directory
-setwd(dir_name)
-
-#load libraries
+#load library for statistical analysis (multicomparisons)
 library(pgirmess)
 
 listSignificantDifferentAlternatives = function(){
@@ -15,7 +12,7 @@ listSignificantDifferentAlternatives = function(){
 	print("LIST OF APP SITES WITH SIGNIFICANT DIFFERENCE IN ENERGY USAGE:")
 	# iterate over folders
 	for (sd in list){
-
+		print(sd)
         	file_name = list.files(sd, pattern ='*.csv', all.files=FALSE)
         	wd = getwd()
 		file_name = paste(wd,"/",sd,"/",file_name,sep="")
