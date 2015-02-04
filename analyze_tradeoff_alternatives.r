@@ -6,7 +6,22 @@
 
 # @path_freq_alt: path to the file containing the frequencies of selected alternatives
 # @path_data: path to the folder containing the energy usage data for the subject app
-# @top_par: number of top alternatives implementations to consider
+# @top_par: number of top alternatives implementations to consider in total
+
+
+get_top_alternatives_results = function(path_freq_alt, path_data, top_par){
+
+    list_results = list()
+    
+    top_iter = seq(5, top_par, by=5)
+    
+    for(limit in top_iter){
+        
+        list_results = c(list_results, analyze_alternatives(path_freq_alt, path_data, limit))
+    }
+    
+    print(list_results)
+}
 
 analyze_alternatives = function(path_freq_alt, path_data, top_par){
     
@@ -27,7 +42,6 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
     top_par=5
     else
     top = top_par # number of top alternatives to consider
-    
     
     setwd(path_data)
     wd = path_data
@@ -91,11 +105,11 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
                         savings = ((mean_orig - mean_alt)/mean_orig)*100
                         
                         if(savings>0)
-                            # alternative : eu_mean, eu_saving, top_#
-                            #cat(alt_name, ": ", mean_alt, ",", savings, ",", top_par, "\n"
-                            # alternative : eu_saving, top_#
-                            cat(alt_name, ": ", savings, ",", top_par, "\n")
-
+                        # alternative : eu_mean, eu_saving, top_#
+                        #cat(alt_name, ": ", mean_alt, ",", savings, ",", top_par, "\n"
+                        # alternative : eu_saving, top_#
+                        cat(alt_name, ": ", savings, ",", top_par, "\n")
+                        
                         if(savings > max_sav){
                             max_sav = savings
                             max_sav_name = alt_name
@@ -103,21 +117,12 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
                     }
                 }
             }
+            
         }
     }
     
-    cat("\n\n", max_sav_name, ",", max_sav, ",", "Selected")
-
+    #cat("\n\n", max_sav_name, ":", max_sav, "\n")
+    
+    return(paste(max_sav_name, max_sav, top_par, sep=", "))
+    
 } # end function analyze_alternatives
-
-# FUNCTION THAT RETURNS TRUE IF THE GIVEN IMPLEMENTATION IS IN THE TOP LIST
-# consider using mapply instead of this function as follows:
-# if(any(mapply(grepl, topM, row.names(test_res[IDpair,]), SIMPLIFY=TRUE, USE.NAMES=FALSE))) 
-
-isImplementationInTopList = function(list, impl){
-	for (item in list){
-		if(grepl(item, impl))
-			return(TRUE)	
-	}	
-	return(FALSE)
-}
