@@ -86,16 +86,19 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
                     # is this alternative in top alternatives list?
                     if(any(mapply(grepl, topM, row.names(test_res[IDpair,]), SIMPLIFY=TRUE, USE.NAMES=FALSE))){
                         
-                        # alternative : eu_mean, top_#
-                        cat(alt, ": ", mean_alt, ",", top_par, "\n")
-                        
                         list_selAlt = c(list_selAlt, alt)
                         list_mEUAlt = c(list_mEUAlt, mean_alt)
                         savings = ((mean_orig - mean_alt)/mean_orig)*100
                         
+                        if(savings>0)
+                            # alternative : eu_mean, eu_saving, top_#
+                            #cat(alt_name, ": ", mean_alt, ",", savings, ",", top_par, "\n"
+                            # alternative : eu_saving, top_#
+                            cat(alt_name, ": ", savings, ",", top_par, "\n")
+
                         if(savings > max_sav){
                             max_sav = savings
-                            max_sav_name = alt
+                            max_sav_name = alt_name
                         }
                     }
                 }
@@ -103,7 +106,7 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
         }
     }
     
-    cat("\n\nMaximum savings: ",max_sav, "by Alternative: ", max_sav_name)
+    cat("\n\n", max_sav_name, ",", max_sav, ",", "Selected")
 
 } # end function analyze_alternatives
 
