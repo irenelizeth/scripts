@@ -104,11 +104,9 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
                         list_mEUAlt = c(list_mEUAlt, mean_alt)
                         savings = ((mean_orig - mean_alt)/mean_orig)*100
                         
-                        if(savings>0)
-                        # alternative : eu_mean, eu_saving, top_#
-                        #cat(alt_name, ": ", mean_alt, ",", savings, ",", top_par, "\n"
-                        # alternative : eu_saving, top_#
-                        cat(alt_name, ": ", savings, ",", top_par, "\n")
+                        #if(savings>0)
+                            # alternative : eu_saving, top_#
+                            #cat(alt_name, ": ", savings, ",", top_par, "\n")
                         
                         if(savings > max_sav){
                             max_sav = savings
