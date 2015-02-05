@@ -121,6 +121,6 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
     }
     
     #cat("\n\n", max_sav_name, ":", max_sav, "\n")
-    return(paste(max_sav_name, max_sav, top_par, sep=", "))
+    return(paste("Top ",top_par,": ", max_sav_name, ", ", max_sav, sep=""))
     
 } # end function analyze_alternatives
