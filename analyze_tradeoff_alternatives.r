@@ -20,7 +20,8 @@ get_top_alternatives_results = function(path_freq_alt, path_data, top_par){
         list_results = c(list_results, analyze_alternatives(path_freq_alt, path_data, limit))
     }
     
-    print(list_results)
+    #print(list_results)
+    writeLines(formatUL(list_results, label=""))
 }
 
 analyze_alternatives = function(path_freq_alt, path_data, top_par){
@@ -62,7 +63,7 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
     
     # keep track of max savings
     max_sav = 0
-    max_sav_name = ""
+    max_sav_name = "NONE"
     
     # iterate over folders
     for (sd in list_files){
@@ -120,7 +121,6 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
     }
     
     #cat("\n\n", max_sav_name, ":", max_sav, "\n")
-    
     return(paste(max_sav_name, max_sav, top_par, sep=", "))
     
 } # end function analyze_alternatives
