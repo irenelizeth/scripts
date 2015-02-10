@@ -39,22 +39,27 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
         stop("path_freq_alt doesn't exist")
     }
     
-    if(top_par<=0)
-    top_par=5
+    if(top_par==0)
+     top_par=5
     else
     top = top_par # number of top alternatives to consider
     
     setwd(path_data)
     wd = path_data
-    
-    
+
+    flag = FALSE # do not review all alternatives implementations
+
+    if((top_par < 0)) # top_par < 0 indicates that no restriction on top alternatives is required
+        flag = TRUE # review all alternative implementations
+    else
+        topM <- as.vector(top_list$implementation[c(1:top)])
+
     # freqCollections.csv
     #read top alternatives file and create a set of top alternatives
     top_list = read.csv(path_freq_alt) # columns: frequency and implementation
     
     list_files = list.files(, all.files=FALSE)
     
-    topM <- as.vector(top_list$implementation[c(1:top)])
     
     #print("LIST SIGNIFICANT DIFFERENT ALTERNATIVES FROM TOP LIST")
     
@@ -99,15 +104,11 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
                     mean_alt = mean(data_res[data_res$alternative==alt_name,1])
                     
                     # is this alternative in top alternatives list?
-                    if(any(mapply(grepl, topM, row.names(test_res[IDpair,]), SIMPLIFY=TRUE, USE.NAMES=FALSE))){
+                    if(any(mapply(grepl, topM, row.names(test_res[IDpair,]), SIMPLIFY=TRUE, USE.NAMES=FALSE)) || flag){
                         
                         list_selAlt = c(list_selAlt, alt)
                         list_mEUAlt = c(list_mEUAlt, mean_alt)
                         savings = ((mean_orig - mean_alt)/mean_orig)*100
-                        
-                        #if(savings>0)
-                            # alternative : eu_saving, top_#
-                            #cat(alt_name, ": ", savings, ",", top_par, "\n")
                         
                         if(savings > max_sav){
                             max_sav = savings
@@ -121,6 +122,10 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
     }
     
     #cat("\n\n", max_sav_name, ":", max_sav, "\n")
-    return(paste("Top ",top_par,": ", max_sav_name, ", ", max_sav, sep=""))
-    
+    if(!flag)
+        return(paste("Top ",top_par,": ", max_sav_name, ", ", max_sav, sep=""))
+    else
+        return(paste("Exhaustive Search : ", max_sav_name, ", ", max_sav, sep=""))
+
+
 } # end function analyze_alternatives
