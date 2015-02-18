@@ -24,17 +24,14 @@ analyze_alloc_sites = function(path_sites_hitcount, path_freq_alt, path_data, to
         stop("path_freq_alt doesn't exist")
     }
 
-
 	setwd(path_data)
-    	wd = path_data
+    wd = path_data
 
-	library(pgirmess)
-    
+
     # as.is=c(2) do not factor values in second column
     sites_data = read.csv(path_sites_hitcount, as.is=c(2))
 
 	max_hit_counts = max(clover)
-	min_hit_counts = min(clover)
 	
 	## ESD : extreme studentized deviation - outlier detection rule
 	mean_sites = mean(sites_data$clover)
