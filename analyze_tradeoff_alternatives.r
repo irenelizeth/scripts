@@ -9,7 +9,7 @@
 # @top_par: number of top alternatives implementations to consider in total
 
 
-get_top_alternatives_results = function(path_freq_alt, path_data, top_par){
+get_top_alternatives_results = function(path_freq_alt, path_data, top_par, list_sites){
 
     list_results = list()
     
@@ -17,14 +17,14 @@ get_top_alternatives_results = function(path_freq_alt, path_data, top_par){
     
     for(limit in top_iter){
         
-        list_results = c(list_results, analyze_alternatives(path_freq_alt, path_data, limit))
+        list_results = c(list_results, analyze_alternatives(path_freq_alt, path_data, limit, list_sites))
     }
     
     #print(list_results)
     writeLines(formatUL(list_results, label=""))
 }
 
-analyze_alternatives = function(path_freq_alt, path_data, top_par){
+analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
     
     #load library for statistical analysis (multicomparisons)
     library(pgirmess)
@@ -58,8 +58,13 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
     #read top alternatives file and create a set of top alternatives
     top_list = read.csv(path_freq_alt) # columns: frequency and implementation
     
-    list_files = list.files(, all.files=FALSE)
-    
+    if(length(list_sites)>0){
+        for(k in 1:length(list_sites))
+        list_sites[k] = paste("site",list_sites[k],sep="")
+        list_files = list_sites
+        #print(list_files)
+    }else
+        list_files = list.files(, all.files=FALSE)
     
     #print("LIST SIGNIFICANT DIFFERENT ALTERNATIVES FROM TOP LIST")
     
@@ -85,7 +90,6 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par){
             # obtain name of pairs comparing alternative and original energy usage only:
             set_pairs = grep("original", row.names(test_res)) # retrieve row numbers of matching rows
             
-            #read energy usage data: (this could be moved before the for loop)
             data_file = list.files(sd, pattern ='combinedFile*', all.files=FALSE)
             file = paste(wd, sd,"/",data_file,sep="")
             data_res = read.csv(file)
