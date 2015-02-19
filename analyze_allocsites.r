@@ -45,6 +45,6 @@ analyze_alloc_sites = function(path_sites_hitcount, path_freq_alt, path_data, to
 	sites <- sites_data[sites_data$clover>=maxR,1]
 
 	## only analyze directories of hot spot sites:
-	analyze_alternatives(path_freq_alt, path_data, top_par, sites) 
+    get_top_alternatives_results(path_freq_alt, path_data, top_par, sites)
 
 }
