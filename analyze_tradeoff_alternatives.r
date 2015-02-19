@@ -13,12 +13,15 @@ get_top_alternatives_results = function(path_freq_alt, path_data, top_par, list_
 
     list_results = list()
     
-    top_iter = seq(5, top_par, by=5)
+    if(top_par>0){
+        top_iter = seq(5, top_par, by=5)
     
-    for(limit in top_iter){
+        for(limit in top_iter){
         
-        list_results = c(list_results, analyze_alternatives(path_freq_alt, path_data, limit, list_sites))
-    }
+            list_results = c(list_results, analyze_alternatives(path_freq_alt, path_data, limit, list_sites))
+        }
+    }else
+        list_results = c(list_results, analyze_alternatives(path_freq_alt, path_data, top_par, list_sites))
     
     #print(list_results)
     writeLines(formatUL(list_results, label=""))
@@ -39,20 +42,18 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
         stop("path_freq_alt doesn't exist")
     }
     
-    if(top_par==0)
-     top_par=5
-    else
-    top = top_par # number of top alternatives to consider
-    
     setwd(path_data)
     wd = path_data
-
+    
     flag = FALSE # do not review all alternatives implementations
 
-    if((top_par < 0)) # top_par < 0 indicates that no restriction on top alternatives is required
+    if(top_par==0)
+        top_par=5
+    else if (top_par < 0) # top_par < 0 indicates that no restriction on top alternatives is required)
         flag = TRUE # review all alternative implementations
-    else
-        topM <- as.vector(top_list$implementation[c(1:top)])
+    else{
+        topM <- as.vector(top_list$implementation[c(1:top_par)])
+    }
 
     # freqCollections.csv
     #read top alternatives file and create a set of top alternatives
