@@ -8,8 +8,6 @@
 # @top_par: number of top alternatives implementations to consider in total
 # @num_sd: number of standard deviations to consider when computing outliers (hot spots)
 
-
-
 analyze_alloc_sites = function(path_sites_hitcount, path_freq_alt, path_data, top_par, num_sd){
 
 	## check valid paths
