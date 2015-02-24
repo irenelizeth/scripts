@@ -71,10 +71,10 @@ begin
   end
   
 rescue StopIteration => ex
-  puts ex
+  #puts ex
 end
 
-exetimes.each {|key, value| puts "#{key} is #{value/reptimes[key]}"}
+exetimes.each {|key, value| puts "#{key}, #{value/reptimes[key]}"}
 
 #exetimes.each {|key, value| puts "#{key} is #{value}"}
 
