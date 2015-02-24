@@ -7,7 +7,7 @@ import csv
 
 from optparse import OptionParser
 
-Usage = """%prog [options] <folder_name>
+usage = """%prog [options] <folder_name>
 	<folder_name>: name of the folder containing the results per site of the application's energy usage
 
 	the structure of the folder given as input should follow the following structure:
@@ -45,31 +45,36 @@ if (args[0]):
 
 # function to read content on files of directory and create csv file line per line
 def createCSVFile(dir_name):
-	listR = []
-	listS = []
+	listR = [] #list of eu results
+	listS = [] #list of alternative implementations
 	files = [f for f in os.listdir(dir_name)]
 
 	for f in files:
-		f = os.path.join(dir_name,f)
-		if (os.path.isfile(f)) and (f.find("subjects") != -1):
-			file_s = open(f,'r')
-			for line in file_s:
-				listS.append(line[:-1])		
+		if not f.startswith('.'):
+			print("analyzing directory: ",f)
+			f = os.path.join(dir_name,f)
+			if (os.path.isfile(f)) and (f.find("subjects") != -1):
+				file_s = open(f,'r')
+				for line in file_s:
+					listS.append(line[:-1]) #TODO: omit blank lines		
 
-		elif (os.path.isfile(f)) and (f.find("results")!= -1):
-			file_r = open(f,'r')
-			for line in file_r:
-				listR.append(line[:-1])
-
+			elif (os.path.isfile(f)) and (f.find("results")!= -1):
+				file_r = open(f,'r')
+				for line in file_r:
+					listR.append(line[:-1])
+				
 	cSite =  os.path.basename(dir_name)
-
+	
 	name_file = os.path.join(dir_name,'combinedFile-'+cSite+'.csv')
-
-	with open(name_file,'wb') as csvfile:
-		csvwriter = csv.writer(csvfile)
-		csvwriter.writerow(['eu','alternative'])
-		for i, val in enumerate(listR):
-			csvwriter.writerow([listR[i],listS[i]])
+	
+	if(len(listR)!=len(listS)):
+		print("lists' lenght is different: ensure results are complete and have all data!")
+	else:
+		with open(name_file,'wb') as csvfile:
+			csvwriter = csv.writer(csvfile)
+			csvwriter.writerow(['eu','alternative'])
+			for i, val in enumerate(listR):
+				csvwriter.writerow([listR[i],listS[i]])
 
 
 #iterate over the folder's subfolders

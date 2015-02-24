@@ -1,12 +1,9 @@
 # clean out the workspace
 rm(list=ls())
 
-dir_name = "euDATA_jfreechart_jcf109_merge/"
+dir_name = getwd()
 
-#change to the new directory
-setwd(dir_name)
-
-#load libraries
+#load library for statistical analysis (multicomparisons)
 library(pgirmess)
 
 listSignificantDifferentAlternatives = function(){
@@ -15,7 +12,7 @@ listSignificantDifferentAlternatives = function(){
 	print("LIST OF APP SITES WITH SIGNIFICANT DIFFERENCE IN ENERGY USAGE:")
 	# iterate over folders
 	for (sd in list){
-
+		print(sd)
         	file_name = list.files(sd, pattern ='*.csv', all.files=FALSE)
         	wd = getwd()
 		file_name = paste(wd,"/",sd,"/",file_name,sep="")
@@ -32,17 +29,12 @@ listSignificantDifferentAlternatives = function(){
 			print(paste(sd,": ",kw_data[3]$p.value))
 			# do multicomparison analysis on listed site:
 			kmc <- kruskalmc(eu~alternative, data=data_name, probs = 0.05)
-			#fileMC <- file(paste(sd,"-","kw-mc.csv"))
-			print(kmc)
+			x <- data.frame(kmc)
+			file_dest = paste(wd,"/",sd,"/","kw-mc.csv",sep="")
+			write.table(x, file=file_dest, sep=",")			
 		}
 
-			#close(fileMC)
-			#print(kmc)
-			#print("\n")
 	
 	}
 
 }
-
-#kmc <- kruskalmc(eu~alternative, data=data_name, probs = 0.05) # multiple-comparison t
-
