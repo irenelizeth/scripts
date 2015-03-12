@@ -45,19 +45,19 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
     setwd(path_data)
     wd = path_data
     
+    # freqCollections.csv
+    #read top alternatives file and create a set of top alternatives
+    top_list = read.csv(path_freq_alt) # columns: frequency and implementation
+    
     flag = FALSE # do not review all alternatives implementations
 
     if(top_par==0)
         top_par=5
-    else if (top_par < 0) # top_par < 0 indicates that no restriction on top alternatives is required)
+    else if (top_par < 0){ # top_par < 0 indicates that no restriction on top alternatives is required)
         flag = TRUE # review all alternative implementations
-    else{
+    }else{
         topM <- as.vector(top_list$implementation[c(1:top_par)])
     }
-
-    # freqCollections.csv
-    #read top alternatives file and create a set of top alternatives
-    top_list = read.csv(path_freq_alt) # columns: frequency and implementation
     
     # filter list of allocation sites to analyze if required
     if(length(list_sites)>0){
@@ -74,6 +74,7 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
     # keep track of max savings
     max_sav = 0
     max_sav_name = "NONE"
+    altInTop = FALSE
     
     # iterate over folders
     for (sd in list_files){
@@ -108,8 +109,13 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
                     mean_alt = mean(data_res[data_res$alternative==alt_name,1])
                     
                     # is this alternative in top alternatives list?
-                    if(any(mapply(grepl, topM, row.names(test_res[IDpair,]), SIMPLIFY=TRUE, USE.NAMES=FALSE)) || flag){
+                    if(length(topM)>0){
+                        altInTop = any(mapply(grepl, topM, row.names(test_res[IDpair,]), SIMPLIFY=TRUE, USE.NAMES=FALSE))
+                    }
+                    
+                    if(altInTop || flag){
                         
+                        #print(paste("Analyzing alternative: ",alt, sep=""))
                         list_selAlt = c(list_selAlt, alt)
                         list_mEUAlt = c(list_mEUAlt, mean_alt)
                         savings = ((mean_orig - mean_alt)/mean_orig)*100
