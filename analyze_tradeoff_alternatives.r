@@ -21,7 +21,7 @@ get_top_alternatives_results = function(path_freq_alt, path_data, top_par, list_
             list_results = c(list_results, analyze_alternatives(path_freq_alt, path_data, limit, list_sites))
         }
     }else
-        list_results = c(list_results, analyze_alternatives(path_freq_alt, path_data, top_par, list_sites))
+        list_results = c(list_results, analyze_alternatives(path_freq_alt, path_data, -1, list_sites))
     
     #print(list_results)
     writeLines(formatUL(list_results, label=""))
@@ -59,6 +59,7 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
     #read top alternatives file and create a set of top alternatives
     top_list = read.csv(path_freq_alt) # columns: frequency and implementation
     
+    # filter list of allocation sites to analyze if required
     if(length(list_sites)>0){
         for(k in 1:length(list_sites))
         list_sites[k] = paste("site",list_sites[k],sep="")
@@ -66,9 +67,7 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
         #print(list_files)
     }else
         list_files = list.files(, all.files=FALSE)
-    
-    #print("LIST SIGNIFICANT DIFFERENT ALTERNATIVES FROM TOP LIST")
-    
+        
     list_selAlt = list() # list of selected alternatives
     list_mEUAlt = list() # list of mean energy usage for selected alternatives
     

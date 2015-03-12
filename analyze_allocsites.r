@@ -11,7 +11,6 @@
 analyze_alloc_sites = function(path_sites_hitcount, path_freq_alt, path_data, top_par, num_sd){
 
 	## check valid paths
-    
     if(!file.exists(path_sites_hitcount)){
         stop("path_sites_hitcount doesn't exist")
     }
@@ -23,7 +22,7 @@ analyze_alloc_sites = function(path_sites_hitcount, path_freq_alt, path_data, to
     if(!file.exists(path_freq_alt)){
         stop("path_freq_alt doesn't exist")
     }
-    
+
     if(num_sd<0)
         num_sd=0
 
@@ -33,12 +32,12 @@ analyze_alloc_sites = function(path_sites_hitcount, path_freq_alt, path_data, to
     # as.is=c(2) do not factor values in second column
     sites_data = read.csv(path_sites_hitcount, as.is=c(2))
 
-	max_hit_counts = max(clover)
+	max_hit_counts = max(sites_data$clover)
 	
 	## ESD : extreme studentized deviation - outlier detection rule
 	mean_sites = mean(sites_data$clover)
 	sd_sites = sd(sites_data$clover)
-    #print(paste("sd: ",sd_sites,sep=""))
+    print(paste("sd: ",sd_sites,sep=""))
     t = num_sd
     
 	##minR = mean_sites - t*sd_sites
