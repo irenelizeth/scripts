@@ -50,6 +50,7 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
     top_list = read.csv(path_freq_alt) # columns: frequency and implementation
     
     flag = FALSE # do not review all alternatives implementations
+    topM <- vector('list')
 
     if(top_par==0)
         top_par=5
