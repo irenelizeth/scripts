@@ -38,8 +38,10 @@ analyze_alloc_sites = function(path_sites_hitcount, path_freq_alt, path_data, to
         limit <- per*nrow(sites_data)
 		sites <- sorted_sites[1:limit,1]
 
-		cat(paste("Top ",per*100,"% ","Selected Hot Spot Sites:",sep=""))
-        cat(format(sites))
+		cat(paste("Top ",per*100,"% ","Sites:",sep=""))
+        #cat(format(sites),";")
+        cat(format(length(sites)),";")
+
 
         get_top_alternatives_results(path_freq_alt, path_data, top_par, sites)
 		per = per + 0.1
