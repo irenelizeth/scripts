@@ -6,15 +6,23 @@
 
 # @path_freq_alt: path to the file containing the frequencies of selected alternatives
 # @path_data: path to the folder containing the energy usage data for the subject app
-# @top_par: number of top alternatives implementations to consider in total
+# @top_par: percentage of top alternatives implementations to consider in total
 
 
 get_top_alternatives_results = function(path_freq_alt, path_data, top_par, list_sites){
 
     list_results = list()
     
+    if(top_par>0 && top_par<10){
+        cat("minimum 10% for for top_par")
+        top_par = 10
+    }
+    
+    if(top_par>100)
+        top_par = 100
+    
     if(top_par>0){
-        top_iter = seq(5, top_par, by=5)
+        top_iter = seq(10, top_par, by=10) # increase percentage of top alternatives to consider by 10
     
         for(limit in top_iter){
         
@@ -33,7 +41,6 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
     library(pgirmess)
     
     #current directory path
-    
     if(!file.exists(path_data)){
         stop("path_data doesn't exist")
     }
@@ -48,16 +55,24 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
     # freqCollections.csv
     #read top alternatives file and create a set of top alternatives
     top_list = read.csv(path_freq_alt) # columns: frequency and implementation
-    
+
     flag = FALSE # do not review all alternatives implementations
     topM <- vector('list')
 
+    per = top_par/100;
+
     if(top_par==0)
-        top_par=5
-    else if (top_par < 0){ # top_par < 0 indicates that no restriction on top alternatives is required)
+        per = 0.03 #minimum percentage of implementations to consider
+    
+    if (top_par < 0){ # top_par < 0 indicates that no restriction on top alternatives is required)
         flag = TRUE # review all alternative implementations
-    }else{
+    }
+    
+    if(top_par>0 && per >=0.03){
+        top_par = floor(per*(nrow(top_list))) # take only the percentage of implem. indicated by top_par
         topM <- as.vector(top_list$implementation[c(1:top_par)])
+        #cat(paste("\n",per*100," % top implementations: \n", sep=""))
+        #cat(paste(topM, "\n", sep=""))
     }
     
     # filter list of allocation sites to analyze if required
@@ -112,11 +127,14 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
                     # is this alternative in top alternatives list?
                     if(length(topM)>0){
                         altInTop = any(mapply(grepl, topM, row.names(test_res[IDpair,]), SIMPLIFY=TRUE, USE.NAMES=FALSE))
+                        if(is.na(altInTop)){ altInTop = FALSE }
                     }
+                    
+                    #cat(paste("\naltInTop for -> ", alt_name, "?:", altInTop, "\n", sep=""))
                     
                     if(altInTop || flag){
                         
-                        #print(paste("Analyzing alternative: ",alt, sep=""))
+                        #cat(paste("Analyzing alternative: ",alt, sep=""))
                         list_selAlt = c(list_selAlt, alt)
                         list_mEUAlt = c(list_mEUAlt, mean_alt)
                         savings = ((mean_orig - mean_alt)/mean_orig)*100
@@ -134,9 +152,9 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
     
     #cat("\n\n", max_sav_name, ":", max_sav, "\n")
     if(!flag)
-        return(paste("Top ",top_par,": ", max_sav_name, ", ", max_sav, sep=""))
+        return(paste("Top ",per*100,"% (", top_par,"): ", max_sav_name, ", ", max_sav, sep=""))
     else
-        return(paste("Exhaustive Search : ", max_sav_name, ", ", max_sav, sep=""))
+        return(paste("Exhaustive Search (All): ", max_sav_name, ", ", max_sav, sep=""))
 
 
 } # end function analyze_alternatives
