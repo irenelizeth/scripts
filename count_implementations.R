@@ -27,7 +27,7 @@ if(!file.exists(file))
 if(top_par<=0)
     top_par=100
 
-cat(paste("site, ","total, ","top","\n", sep=""))
+cat(paste("subject, ","site, ","total, ","top","\n", sep=""))
 
 # freqCollections.csv
 #read top alternatives file and create a set of top alternatives
@@ -57,8 +57,10 @@ for (item in 1:nrow(data)){
     if(nImpl>0){
         for(i in 2:(nImpl+1)){
             # get the name of the implementation from the string
-            str = unlist(strsplit(data[item,i],split=data[item,1],fixed=TRUE))[2]
-            list[i-1] <- substr(str,2,nchar(str)-4)
+            str = unlist(strsplit(data[item,i],split=data[item,1],fixed=TRUE))
+            subject = unlist(strsplit(str[1],split="alternatives",fixed=TRUE))[1]
+            subject_name <- substr(subject,1,nchar(subject)-1)
+            list[i-1] <- substr(str[2],2,nchar(str[2])-4)
         }
     }
     
@@ -83,7 +85,7 @@ for (item in 1:nrow(data)){
     # which top implementations are included?
     nTop = length(which(res==TRUE,)) # return indices of implementations in topM
     #print site #, # total implemen. , # implem. top list
-    cat(paste(nSite, ", ",nImpl, ", ", count, "\n", sep=""))
+    cat(paste(subject_name, ",", nSite, ", ",nImpl, ", ", count, "\n", sep=""))
     
 }
 
