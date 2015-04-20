@@ -1,10 +1,11 @@
 #!/usr/bin/env Rscript
 
 # file to reshape data files that contain the list of implementations
-# available for each subject app, obtained from bash script
+# available for each subject data file containing list of implementations per site
 
-# file: path to data file containing results of impplementations per site
+# input file: path to data file containing results of impplementations per site
 # format input file: <row> : site#,impl1, impl2, impl3,...,impln
+# output: subject and number of implementations in total and by percentage in top list (csv format)
 
 args <- commandArgs(TRUE)
 
@@ -12,24 +13,23 @@ file = args[1]
 top_par = as.integer(args[2])
 
 if(!file.exists(file))
-    stop("file doesn't exist")
+stop("file doesn't exist")
 
-if(top_par<=0)
-    top_par=100
+#if(top_par<=0)
+#top_par=100
 
-cat(paste("subject, ","site, ","total, ","top","\n", sep=""))
+cat(paste("subject, ","site, ","total, ","top.100, ", "top.90, ", "top.80, ", "top.70, ", "top.60, ", "top.50, ", "top.40, ", "top.30, ", "top.20, ", "top.10", "\n", sep=""))
+
 
 #read top alternatives file and create a set of top alternatives
 top_list = read.csv("freqCollections.csv")
 
-    per = top_par/100
-    top_par = floor(per*(nrow(top_list))) # take only the percentage of implem. indicated by top_par
-    topM <- as.vector(top_list$implementation[c(1:top_par)])
 
+
+listTop <- list()
 
 data = read.csv(file, stringsAsFactors=FALSE, skipNul=TRUE, na.strings="", header=FALSE)
 
-# analyze how many in top list
 for (item in 1:nrow(data)){
     
     #site number
@@ -51,25 +51,39 @@ for (item in 1:nrow(data)){
         }
     }
     
-    count = 0
-    for(i in 1:length(topM)){
-        for(j in 1:length(list)){
-            res = grepl(topM[i],list[j])
-            
-            if(isTRUE(res)){
-                count=count+1
-                #cat(paste(list[j],", ",count,"\n"),sep="")
+    # analyze how many in top list by percentage
+    listTop <- vector()
+    seq = seq(100, 10, by=-10)
+    for(top_par in seq){
+        
+        per = top_par/100
+        top_par = floor(per*(nrow(top_list))) # take only the percentage of implem. indicated by top_par
+        topM <- as.vector(top_list$implementation[c(1:top_par)])
+        
+        count = 0
+        for(i in 1:length(topM)){
+            for(j in 1:length(list)){
+                res = grepl(topM[i],list[j])
+                
+                if(isTRUE(res)){
+                    count=count+1
+                    #cat(paste(list[j],", ",count,"\n"),sep="")
+                }
             }
         }
+        
+        listTop <- c(listTop, count)
     }
     
-    #res = mapply(grepl, topM, list)
-    #nTop = length(which(res==TRUE))
+    # res = mapply(grepl, topM, list)
+    # nTop = length(which(res==TRUE))
     
     # which top implementations are included?
-    nTop = length(which(res==TRUE,)) # return indices of implementations in topM
-    cat(paste(subject_name, ",", nSite, ", ",nImpl, ", ", count, "\n", sep=""))
-    
+    nTop = length(which(res==TRUE,)) # return how many indices of implementations are in topM
+    cat(paste(subject_name, ",", nSite, ", ",nImpl, ", ", sep=""))
+    # print implementations count by top list
+    cat(paste(listTop, ",", sep=""))
+    cat("\n")
 }
 
 
