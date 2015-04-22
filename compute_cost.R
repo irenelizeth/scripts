@@ -63,7 +63,9 @@ compute_cost_sites <- function(data_set){
     per = 1
     while(per>=0.1 && per<=1){
         
-        limit <- floor(per*nrow(sites_data))
+        #limit <- floor(per*nrow(sites_data))
+        limit <- floor(per*nrow(sorted_sites))
+        if(limit<1) limit <- 1
         sites <- sorted_sites[1:limit,1]
         
         rows <- as.integer(row.names(data_set[which(data_set[,2] %in% sites),]))
@@ -74,8 +76,6 @@ compute_cost_sites <- function(data_set){
         tcost = 0
         # time rewrite apps + optimize
         tRwr = sum(data[,3])*2 #tRr = data[i,3] + tRr
-        #cat(paste("sum: ", sum(data[,3]), sep=""))
-        #cat("\n")
 
         # time test regression
         ttime = test_time[switch(data[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
@@ -177,7 +177,6 @@ for(item in list.files()){
     data <- read.csv(item, skipNul=TRUE, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
     subjectName <- data[1,1]
     
-    #TO-DO: check names of hitcount csv files match subject names in data_implem
     path_sites_hitcount = paste("../../",subjectName,"-hitcount.sites.csv",sep="")
     
     # as.is=c(2) do not factor values in second column
@@ -186,11 +185,11 @@ for(item in list.files()){
     #select sites based on higher execution count
     sorted_sites <- sites_data[order(sites_data$clover, decreasing=TRUE),]
     
-    # get indices of sites which have implementations
+    # get indices of sites which have implementations in dataset
     ind <- which(sorted_sites[,1] %in% data[,2])
     # update hitcount data, only consider sites with hitcount data
     sorted_sites <- sorted_sites[ind,]
-    
+
     compute_cost_sites(data)
 }
 
