@@ -99,6 +99,7 @@ compute_cost_sites <- function(data_set){
     
 }
 
+
 compute_cost_combined <- function(data_set){
     
     nsites <- nrow(data_set)
@@ -113,23 +114,26 @@ compute_cost_combined <- function(data_set){
             limit <- nrow(sites_data)
         else
             limit <- floor(per*nrow(sites_data))
-            
+        
+        if(limit<1) limit <- 1
         sites <- sorted_sites[1:limit,1]
         
-        rows <- as.integer(row.names(data_set[which(data[,2] %in% sites),]))
+        rows <- as.integer(row.names(data_set[which(data_set[,2] %in% sites),]))
+        
         #only consider selected hotspot sites
         data <- data_set[rows,]
+        
         tcost = 0
         # time rewrite apps + optimize
         tRwr = sum(data[,col])*2 #tRr = data[i,3] + tRr
         
         # time test regression
-        ttime = test_time[switch(data_set[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
-        tReg = (sum(data_set[,col])+1)*ttime
+        ttime = test_time[switch(data[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
+        tReg = (sum(data[,col])+1)*ttime
         
         # time LEAP machine + time analyze (sync, filter, totaleu)
-        rep = repetitions[switch(data_set[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
-        tLeap = ttime*sum(data_set[,col])*3*rep
+        rep = repetitions[switch(data[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
+        tLeap = ttime*sum(data[,col])*3*rep
         
         # cost [hrs]
         tcost = (tRwr + tReg + tLeap)/3600
@@ -137,8 +141,8 @@ compute_cost_combined <- function(data_set){
         cat(sprintf("%.2f, ", tcost))
         
         per = per - 0.1
-        
         col = col + 1
+
     }
     
     cat("\n")
@@ -146,7 +150,6 @@ compute_cost_combined <- function(data_set){
     # TO-DO:write cost hotspots strategy to CSV file
     
 }
-
 
 
 ###
@@ -205,7 +208,6 @@ for(item in list.files()){
     data <- read.csv(item, skipNul=TRUE, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
     subjectName <- data[1,1]
     
-    #TO-DO: check names of hitcount csv files match subject names in data_implem
     path_sites_hitcount = paste("../../",subjectName,"-hitcount.sites.csv",sep="")
     
     # as.is=c(2) do not factor values in second column
@@ -214,7 +216,12 @@ for(item in list.files()){
     #select sites based on higher execution count
     sorted_sites <- sites_data[order(sites_data$clover, decreasing=TRUE),]
     
-    #compute_cost_combined(data)
+    # get indices of sites which have implementations in dataset
+    ind <- which(sorted_sites[,1] %in% data[,2])
+    # update hitcount data, only consider sites with hitcount data
+    sorted_sites <- sorted_sites[ind,]
+    
+    compute_cost_combined(data)
 }
 
 
