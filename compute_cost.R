@@ -67,19 +67,6 @@ compute_cost_sites <- function(data_set){
         sites <- sorted_sites[1:limit,1]
         
         rows <- as.integer(row.names(data_set[which(data_set[,2] %in% sites),]))
-        
-        #if(length(sites)!=length(rows)){
-        
-        #    cat("\n")
-        #    cat(paste(per*100,"% sites: ", sep=""))
-        #    cat(sites)
-        #    cat("\n")
-        
-        #    cat(paste(per*100,"% rows: ", sep=""))
-        #    cat(rows)
-        #    cat("\n")
-        
-        #}
 
         #only consider selected hotspot sites
         data <- data_set[rows,]
