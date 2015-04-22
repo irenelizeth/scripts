@@ -32,30 +32,35 @@ analyze_combined_strategies = function(path_sites_hitcount, path_freq_alt, path_
     sorted_sites <- sorted_sites[ind,]
     print(sorted_sites[,1])
     
-    #iterate over percentage of sites to consider
+    #iterate over percentage of sites and implementations to consider
     per = 0.1
-    while(per<=1.1){
+    while(per<=1){
         
-        if(per>=1){
-            limit <- floor(nrow(sorted_sites))
-            cat(paste("Top ","All Sites:",sep=""))
-        }else{
-            limit <- floor(per*nrow(sorted_sites))
+        cat(paste("per: ", per, "\n", sep=""))
+
+          limit <- round(per*nrow(sorted_sites))
             cat(paste("Top ",per*100,"% ","Sites:",sep=""))
-        }
-        
-        sites <- sorted_sites[1:limit,1]
-        cat("\n")
-        cat(sites)
-        cat(" | ")
-        cat(format(length(sites)),";")
-        
-        list_results = list()
-        list_results = c(list_results, analyze_alternatives(path_freq_alt, path_data, per*100 , sites))
-        writeLines(formatUL(list_results, label=""))
+            sites <- sorted_sites[1:limit,1]
+            
+            #cat("\n") #cat(sites) #cat(" | ") #cat(format(length(sites)),";")
+            
+            list_results = list()
+            list_results = c(list_results, analyze_alternatives(path_freq_alt, path_data, per*100 , sites))
+            writeLines(formatUL(list_results, label=""))
+
         
         per = per + 0.1
     }
     
+    cat(paste("Top ","All Sites:",sep=""))
+    limit <- round(nrow(sorted_sites))
+    sites <- sorted_sites[1:limit,1]
+    
+    #cat("\n") #cat(sites) #cat(" | ") #cat(format(length(sites)),";")
+    
+    list_results = list()
+    list_results = c(list_results, analyze_alternatives(path_freq_alt, path_data, 100 , sites))
+    writeLines(formatUL(list_results, label=""))
+
 }
 
