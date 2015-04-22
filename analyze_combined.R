@@ -30,14 +30,10 @@ analyze_combined_strategies = function(path_sites_hitcount, path_freq_alt, path_
     ind <- which(sorted_sites[,1] %in% data[,2])
     # update hitcount data, only consider sites with hitcount data
     sorted_sites <- sorted_sites[ind,]
-    print(sorted_sites[,1])
     
     #iterate over percentage of sites and implementations to consider
     per = 0.1
     while(per<=1){
-        
-        cat(paste("per: ", per, "\n", sep=""))
-
           limit <- round(per*nrow(sorted_sites))
             cat(paste("Top ",per*100,"% ","Sites:",sep=""))
             sites <- sorted_sites[1:limit,1]
