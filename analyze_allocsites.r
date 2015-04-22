@@ -6,8 +6,9 @@
 # @path_freq_alt: path to the file containing the frequencies of selected alternatives
 # @path_data: path to the folder containing the energy usage data for the subject app
 # @top_par: number of top alternatives implementations to consider in total
+# @path_implem: path to the file containing the list of implementations by site in the subject app
 
-analyze_alloc_sites = function(path_sites_hitcount, path_freq_alt, path_data, top_par){
+analyze_alloc_sites = function(path_sites_hitcount, path_freq_alt, path_data, top_par, path_implem){
 
 	## check valid paths
     if(!file.exists(path_sites_hitcount)){
@@ -31,43 +32,30 @@ analyze_alloc_sites = function(path_sites_hitcount, path_freq_alt, path_data, to
 	## 1)Option: Select sites based on higher execution count
 	sorted_sites <- sites_data[order(sites_data$clover, decreasing=TRUE),]
 	
-	#iterate over percentage of sites to condider
+    # filter sites to those  with implementations only
+    data <- read.csv(path_implem, skipNul=TRUE, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    # get indices of sites which have implementations in dataset
+    ind <- which(sorted_sites[,1] %in% data[,2])
+    # update hitcount data, only consider sites with hitcount data
+    sorted_sites <- sorted_sites[ind,]
+    
+    
+	#iterate over percentage of sites to consider
 	per = 0.1
 	while(per<=1){
-		
-        limit <- per*nrow(sites_data)
+        
+        limit <- per*nrow(sorted_sites)
 		sites <- sorted_sites[1:limit,1]
+        #cat("selected sites: ")
+        #cat(sites)
+        #cat("\n")
 
 		cat(paste("Top ",per*100,"% ","Sites:",sep=""))
         #cat(format(sites),";")
         cat(format(length(sites)),";")
 
-
         get_top_alternatives_results(path_freq_alt, path_data, top_par, sites)
 		per = per + 0.1
 	}
-
-	## 2)Option: Use ESD : extreme studentized deviation - outlier detection rule
-    #if(num_sd<0)
-    #    num_sd=0
-    
-    #max_hit_counts = max(sites_data$clover)
-	#mean_sites = mean(sites_data$clover)
-	#sd_sites = sd(sites_data$clover)
-    	#print(paste("sd: ",sd_sites,sep=""))
-    	#t = num_sd
-    
-	##minR = mean_sites - t*sd_sites
-	#maxR = mean_sites + t*sd_sites
-    	##print(paste("maxR: ",maxR,sep=""))
-
-	##select hot spots based on outlier detection
-	#sites <- sites_data[sites_data$clover>=maxR,1]
-    
-    	#print("Selected Hot Spot Sites:")
-    	#print(sites)
-
-	## only analyze directories of hot spot sites:
-    	#get_top_alternatives_results(path_freq_alt, path_data, top_par, sites)
 
 }
