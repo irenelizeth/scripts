@@ -63,7 +63,6 @@ compute_cost_sites <- function(data_set){
     per = 1
     while(per>=0.1 && per<=1){
         
-        #limit <- floor(per*nrow(sites_data))
         limit <- floor(per*nrow(sorted_sites))
         if(limit<1) limit <- 1
         sites <- sorted_sites[1:limit,1]
@@ -111,9 +110,9 @@ compute_cost_combined <- function(data_set){
     while(per>=0.1 && per<=1.1){
         
         if(per==1.1)
-            limit <- nrow(sites_data)
+            limit <- nrow(sorted_sites)
         else
-            limit <- floor(per*nrow(sites_data))
+            limit <- floor(per*nrow(sorted_sites))
         
         if(limit<1) limit <- 1
         sites <- sorted_sites[1:limit,1]
