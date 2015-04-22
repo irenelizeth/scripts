@@ -43,7 +43,7 @@ analyze_alloc_sites = function(path_sites_hitcount, path_freq_alt, path_data, to
 	#iterate over percentage of sites to consider
 	per = 0.1
 	while(per<=1){
-        
+                
         limit <- per*nrow(sorted_sites)
 		sites <- sorted_sites[1:limit,1]
         #cat("selected sites: ")
