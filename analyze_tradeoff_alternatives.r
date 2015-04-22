@@ -69,7 +69,7 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
     }
     
     if(top_par>0 && per >=0.03){
-        top_par = floor(per*(nrow(top_list))) # take only the percentage of implem. indicated by top_par
+        top_par = round(per*(nrow(top_list))) # take only the percentage of implem. indicated by top_par
         topM <- as.vector(top_list$implementation[c(1:top_par)])
         #cat(paste("\n",per*100," % top implementations: \n", sep=""))
         #cat(paste(topM, "\n", sep=""))
