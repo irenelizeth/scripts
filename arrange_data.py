@@ -21,32 +21,35 @@ parser = OptionParser(usage)
 # function to append files from a given directory to file_a
 def appendFilesToNewFile(new_file, file_r, pattern):
 
-    file_a = open(new_file,"wr+")
-    print "to write in: " + new_file
-    
+    path, filename = os.path.split(new_file)
+
     if(pattern=="results"):
-        #read temporal file to
-        file_r2="temp.csv"
+        tname = os.path.abspath(path)
+        aname = tname[tname.rfind("/",0,len(tname))+1:len(tname)]
+        file_a = open(new_file+"_"+aname+".csv","wr+")
+        
+        #read temporal file
+        file_r2= path+"/temp.csv"
         with open(file_r2, 'rU') as csvtemp:
             with open(file_r, 'rU') as csvfile:
                 tfreader = csv.reader(csvtemp, delimiter=',')
                 freader =  csv.reader(csvfile, delimiter=' ')
                 for row in tfreader:
                     oline = ', '.join(freader.next())
-                    #print(oline)
                     nline = ', '.join(row) + oline + "\r"
-                    #print(nline)
                     file_a.write(nline)
 
         #delete temporal file
-        os.remove("temp.csv")
+        os.remove(file_r2)
     else:
+        file_a = open(new_file,"wr+")
+        #path, filename = os.path.split(new_file)
+        
         print "to read from: " + file_r + "\n"
         with open(file_r,'rU') as csvfile:
             freader = csv.reader(csvfile, delimiter=' ')
             for row in freader:
                 nline=', '.join(row)+", \r"
-                #print(nline)
                 file_a.write(nline)
     file_a.close()
 
@@ -56,28 +59,27 @@ def traverseDirectories(directory, new_file, type):
     for f in targetfiles:
         name_file = join(directory,f)
         if (isdir(name_file)):
-            print "traversing dir call"
             traverseDirectories(name_file, new_file, type)
         elif (isfile(name_file)) and (f.find(type)!= -1):
-            print name_file
-            print "going for results file"
+            new_file = join(directory,new_file)
+            print "join file output: "+ new_file +"\n"
             appendFilesToNewFile(new_file,name_file, type)
 
-if len(args) < 2:
+if len(args) < 1:
     parser.print_help()
     sys.exit(1)
-
-if (args[1]):
-    if not args[1]:
-        print "missing name of file containing all data!"
-        parser.print_help()
-        sys.exit(1)
 
 if not os.path.exists(args[0]):
     print "target directory doesn't exist"
     sys.exit(1)
 
+path, tail = os.path.split(args[0])
+
+
 # start traversing the directory structure
 traverseDirectories(args[0], "temp.csv", "subjects")
-traverseDirectories(args[0], args[1], "results")
+#traverseDirectories(args[0], args[1], "results")
+traverseDirectories(args[0], "unified", "results")
+print "[done] arrange_data.py"
+
 
