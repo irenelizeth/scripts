@@ -81,9 +81,6 @@ compute_cost_alternatives <- function(data_set){
         rep = repetitions[switch(data_set[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
         tLeap = ttime*sum(data_set[,col])*3*rep
         
-        tAnalysis
-        t
-        
         # cost [hrs]
         tcost = (tRwr + tReg + tLeap)/3600
         
