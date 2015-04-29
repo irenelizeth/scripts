@@ -19,7 +19,7 @@ parser = OptionParser(usage)
 (options, args) = parser.parse_args()
 
 # function to append files from a given directory to file_a
-def appendFilesToNewFile(new_file, file_r, pattern):
+def appendDataIntoNewFile(new_file, file_r, pattern):
 
     path, filename = os.path.split(new_file)
 
@@ -43,9 +43,7 @@ def appendFilesToNewFile(new_file, file_r, pattern):
         os.remove(file_r2)
     else:
         file_a = open(new_file,"wr+")
-        #path, filename = os.path.split(new_file)
         
-        print "to read from: " + file_r + "\n"
         with open(file_r,'rU') as csvfile:
             freader = csv.reader(csvfile, delimiter=' ')
             for row in freader:
@@ -62,8 +60,33 @@ def traverseDirectories(directory, new_file, type):
             traverseDirectories(name_file, new_file, type)
         elif (isfile(name_file)) and (f.find(type)!= -1):
             new_file = join(directory,new_file)
-            print "join file output: "+ new_file +"\n"
-            appendFilesToNewFile(new_file,name_file, type)
+            #print "join file output: "+ new_file +"\n"
+            appendDataIntoNewFile(new_file,name_file, type)
+
+
+def appendAllData(new_file, file_r):
+    path, filename = os.path.split(new_file)
+    file_a = open(new_file,"a+")
+    
+    with open(file_r,'rU') as csvfile:
+        freader = csv.reader(csvfile, delimiter=' ')
+        for row in freader:
+            nline = ' '.join(row)+"\r"
+            file_a.write(nline)
+    file_a.close()
+
+
+
+#args[1] file's name for subject unified data
+def combineDataAllSites(directory, new_file):
+    targetdirs = [fd for fd in os.listdir(directory)]
+    for dir in targetdirs:
+        name_dir = join(directory,dir)
+        if(isdir(name_dir)):
+            tname = os.path.abspath(name_dir)
+            aname = tname[tname.rfind("/",0,len(tname))+1:len(tname)]
+            file = tname+"/unified_"+aname+".csv"
+            appendAllData(new_file, file)
 
 if len(args) < 1:
     parser.print_help()
@@ -73,13 +96,16 @@ if not os.path.exists(args[0]):
     print "target directory doesn't exist"
     sys.exit(1)
 
-path, tail = os.path.split(args[0])
-
 
 # start traversing the directory structure
 traverseDirectories(args[0], "temp.csv", "subjects")
-#traverseDirectories(args[0], args[1], "results")
 traverseDirectories(args[0], "unified", "results")
-print "[done] arrange_data.py"
+print "[done] creating unified data files"
+
+combineDataAllSites(args[0], args[1])
+print "[done] creating data file with all results"
+
+
+
 
 
