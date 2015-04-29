@@ -27,7 +27,7 @@ compute_cost_alternatives <- function(data_set){
     nsites <- nrow(data_set)
     cat(paste(data_set[1,1], ", ", sep=""))
     
-    for(col in 3:13){ # indice col for number alternatives
+    for(col in 5:15){ # indice col for number alternatives
         
         tcost = 0
         
@@ -74,15 +74,15 @@ compute_cost_sites <- function(data_set){
 
         tcost = 0
         # time rewrite apps + optimize
-        tRwr = sum(data[,3])*2 #tRr = data[i,3] + tRr
+        tRwr = sum(data[,5])*2 #tRr = data[i,3] + tRr
 
         # time test regression
         ttime = test_time[switch(data[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
-        tReg = (sum(data[,3])+1)*ttime
+        tReg = (sum(data[,5])+1)*ttime
         
         # time LEAP machine + time analyze (sync, filter, totaleu)
         rep = repetitions[switch(data[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
-        tLeap = ttime*sum(data[,3])*3*rep
+        tLeap = ttime*sum(data[,5])*3*rep
         
         # cost [hrs]
         tcost = (tRwr + tReg + tLeap)/3600
@@ -106,7 +106,7 @@ compute_cost_combined <- function(data_set){
     
     #iterate over percentage of sites to condider
     per = 1.1
-    col = 3
+    col = 5
     while(per>=0.1 && per<=1.1){
         
         if(per==1.1)
