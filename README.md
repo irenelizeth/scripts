@@ -1,4 +1,4 @@
-# scripts for organizing and preparing energy usage data for analysis
+# scripts for preparing and doing energy usage data analysis
 
 Order of usage:
 
@@ -7,4 +7,4 @@ Order of usage:
 3. R: analyze_statsig
 4. R: analyze_tradeoff_alternatives (use top_par = -1 for exhaustive exploration)
 5. R: analyze_alloc_sites
-6. compute_costs --> compute_cost_alternatives, compute_cost_sites, compute_cost_combined
+6. R: compute_cost --> compute_cost_alternatives, compute_cost_sites, compute_cost_combined
