@@ -18,13 +18,10 @@ stop("file doesn't exist")
 #if(top_par<=0)
 #top_par=100
 
-cat(paste("subject, ","site, ","total, ","top.100, ", "top.90, ", "top.80, ", "top.70, ", "top.60, ", "top.50, ", "top.40, ", "top.30, ", "top.20, ", "top.10", "\n", sep=""))
-
+cat(paste("subject, ","site, ","jcf", "others", "total, ","top.100, ", "top.90, ", "top.80, ", "top.70, ", "top.60, ", "top.50, ", "top.40, ", "top.30, ", "top.20, ", "top.10", "\n", sep=""))
 
 #read top alternatives file and create a set of top alternatives
 top_list = read.csv("freqCollections.csv")
-
-
 
 listTop <- list()
 
@@ -38,6 +35,9 @@ for (item in 1:nrow(data)){
     #compute number of implementations in total per site
     nImpl = length(data[item,][!is.na(data[item,])])-1
     
+    #counts number of JCF implementations per site
+    nJCFImpl = 0;
+    
     list <- list()
     # restructure implementation names from data
     if(nImpl>0){
@@ -47,9 +47,15 @@ for (item in 1:nrow(data)){
             subject = unlist(strsplit(str[1],split="alternatives",fixed=TRUE))[1]
             subject_name <- substr(subject,1,nchar(subject)-1)
             # get the name of the implementation from the string
-            list[i-1] <- substr(str[2],2,nchar(str[2])-4)
+            impl <- substr(str[2],2,nchar(str[2])-4)
+            list[i-1] <- impl
+            # which implementations in JCF - java.util
+            if(!is.na(unlist(strsplit(impl, split="java-util", fixed=TRUE))[2]))
+                nJCFImpl = nJCFImpl + 1
         }
     }
+    
+    
     
     # analyze how many in top list by percentage
     listTop <- vector()
@@ -80,7 +86,7 @@ for (item in 1:nrow(data)){
     
     # which top implementations are included?
     nTop = length(which(res==TRUE,)) # return how many indices of implementations are in topM
-    cat(paste(subject_name, ",", nSite, ", ",nImpl, ", ", sep=""))
+    cat(paste(subject_name, ",", nSite, ", ", nJCFImpl, ", ", nImpl-nJCFImpl, ", ", nImpl, ", ", sep=""))
     # print implementations count by top list
     cat(paste(listTop, ",", sep=""))
     cat("\n")
