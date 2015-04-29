@@ -18,7 +18,7 @@ stop("file doesn't exist")
 #if(top_par<=0)
 #top_par=100
 
-cat(paste("subject, ","site, ","jcf", "others", "total, ","top.100, ", "top.90, ", "top.80, ", "top.70, ", "top.60, ", "top.50, ", "top.40, ", "top.30, ", "top.20, ", "top.10", "\n", sep=""))
+cat(paste("subject, ","site, ","jcf,", "others,", "total, ","top.100, ", "top.90, ", "top.80, ", "top.70, ", "top.60, ", "top.50, ", "top.40, ", "top.30, ", "top.20, ", "top.10", "\n", sep=""))
 
 #read top alternatives file and create a set of top alternatives
 top_list = read.csv("freqCollections.csv")
