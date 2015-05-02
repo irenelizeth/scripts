@@ -16,9 +16,9 @@ suppressWarnings(suppressPackageStartupMessages(library(hash)))
 
 # compute seeds cost
 
-# order: barbecue, jodatime, commons-lang, xml-security, jdepend, jfreechart
-test_time <- c(5.3, 3.0, 90.0, 124.0, 4.0, 60.0)
-repetitions <- c(10, 10, 3, 10, 10, 5)
+# order: barbecue, jodatime, commons-lang, xml-security, jdepend, jfreechart, gson
+test_time <- c(5.3, 3.0, 90.0, 124.0, 4.0, 60.0, 2.0)
+repetitions <- c(10, 10, 3, 10, 10, 5, 5)
 
 setwd(args[1])
 
@@ -35,11 +35,11 @@ compute_cost_general <- function(data_set){
         tRwr = sum(data_set[,col])*2 #tRr = data[i,3] + tRr
         
         # time test regression
-        ttime = test_time[switch(data_set[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
+        ttime = test_time[switch(data_set[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6, "gson"=7)]
         tReg = (sum(data_set[,col])+1)*ttime
         
         # time LEAP machine + time analyze (sync, filter, totaleu)
-        rep = repetitions[switch(data_set[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
+        rep = repetitions[switch(data_set[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6, "gson"=7)]
         tLeap = ttime*sum(data_set[,col])*3*rep
         
         # cost [hrs]
@@ -74,12 +74,12 @@ compute_cost_alternatives <- function(data_set){
         tRwr = sum(data_set[,col])*2 #tRr = data[i,3] + tRr
         
         # time test regression
-        ttime = test_time[switch(data_set[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
+        ttime = test_time[switch(data_set[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6, "gson"=7)]
         tReg = (sum(data_set[,col])+1)*ttime
         
         # time LEAP machine + time analyze (sync, filter, totaleu)
-        rep = repetitions[switch(data_set[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
-        tLeap = ttime*sum(data_set[,col])*3*rep
+        rep = repetitions[switch(data_set[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6, "gson"=7)]
+        tLeap = ttime*sum(data_set[,col])*3*rep=
         
         # cost [hrs]
         tcost = (tRwr + tReg + tLeap)/3600
@@ -116,11 +116,11 @@ compute_cost_sites <- function(data_set){
         tRwr = sum(data[,5])*2 #tRr = data[i,3] + tRr
 
         # time test regression
-        ttime = test_time[switch(data[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
+        ttime = test_time[switch(data[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6, "gson"=7)]
         tReg = (sum(data[,5])+1)*ttime
         
         # time LEAP machine + time analyze (sync, filter, totaleu)
-        rep = repetitions[switch(data[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
+        rep = repetitions[switch(data[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6, "gson"=7)]
         tLeap = ttime*sum(data[,5])*3*rep
         
         # cost [hrs]
@@ -166,11 +166,11 @@ compute_cost_combined <- function(data_set){
         tRwr = sum(data[,col])*2 #tRr = data[i,3] + tRr
         
         # time test regression
-        ttime = test_time[switch(data[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
+        ttime = test_time[switch(data[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6, "gson"=7)]
         tReg = (sum(data[,col])+1)*ttime
         
         # time LEAP machine + time analyze (sync, filter, totaleu)
-        rep = repetitions[switch(data[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6)]
+        rep = repetitions[switch(data[1,1], "barbecue"=1, "jodatime"=2, "commons-lang"=3, "xml-security"=4, "jdepend"=5, "jfreechart"=6, "gson"=7)]
         tLeap = ttime*sum(data[,col])*3*rep
         
         # cost [hrs]
