@@ -13,7 +13,6 @@ usage = """%prog [options] <target_directory> <file_name>
     target_directory:  directory containing multiple directories with target files for which other files will be appended
     file_name: specify the name of the file that will have all the data
     """
-
 parser = OptionParser(usage)
 
 (options, args) = parser.parse_args()
@@ -85,7 +84,8 @@ def combineDataAllSites(directory, new_file):
         if(isdir(name_dir)):
             tname = os.path.abspath(name_dir)
             aname = tname[tname.rfind("/",0,len(tname))+1:len(tname)]
-            file = tname+"/unified_"+aname+".csv"
+            #file = tname+"/unified_"+aname+".csv"
+            file = tname+"/combinedFile-"+aname+".csv"
             appendAllData(new_file, file)
 
 if len(args) < 1:
