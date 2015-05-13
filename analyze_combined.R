@@ -1,6 +1,19 @@
+#!/usr/bin/env Rscript
+
 # analyze_combined strategies: using top implementations and top hotspot sites (percentages)
 
 # all, specify if analysis should include all possible combinations (1), or only those with same percentage of sites and top implementations (0 - default)
+
+source("analyze_tradeoff_alternatives.r")
+
+arg <- commandArgs(TRUE)
+
+path_sites_hitcount <- arg[1]
+path_freq_alt <- arg[2]
+path_data <- arg[3]
+path_implem <- arg[4]
+all <- arg[5]
+
 
 analyze_combined_strategies = function(path_sites_hitcount, path_freq_alt, path_data, path_implem, all){
     
@@ -66,12 +79,13 @@ analyze_combined_strategies = function(path_sites_hitcount, path_freq_alt, path_
 
         
     }else{ #all==1
-        cat("[all combinations analysis] all diff combination of sites and implementations\n")
+        #cat("[all combinations analysis] all diff combination of sites and implementations\n")
         
         per = 0.1
         perImpl = 0.1
-        
         cat("subject, pSites, pAlt, euSav\n") # proportion of sites, proportion of implementations, proportion of Energy usage Savings
+        subjName = data$row.names[1]
+        
         while(per<=1){
             limit <- round(per*nrow(sorted_sites))
             sites <- sorted_sites[1:limit,1]
@@ -81,8 +95,10 @@ analyze_combined_strategies = function(path_sites_hitcount, path_freq_alt, path_
                 # get results for given percentage of sites and same percentage of alternatives in top list (ee)
                 result = analyze_alternatives(path_freq_alt, path_data, perImpl*100 , sites)
                 val = format(as.double(unlist(strsplit(result,split=",", fixed=TRUE))[2]), digits=4)
-                strSubj = unlist(strsplit(unlist(strsplit(result,split=",", fixed=TRUE))[1], split="-", fixed=TRUE))[1]
-                subjName = unlist(strsplit(strSubj, split=":", fixed=TRUE))[2]
+                
+                #strSubj = unlist(strsplit(unlist(strsplit(result,split=",", fixed=TRUE))[1], split="-", fixed=TRUE))[1]
+                #subjName = unlist(strsplit(strSubj, split=":", fixed=TRUE))[2]
+                
                 cat(paste(subjName, ", ", per, ", ", perImpl,", ", val, "\n", sep=""))
                 perImpl = perImpl + 0.1
             }
@@ -102,4 +118,8 @@ analyze_combined_strategies = function(path_sites_hitcount, path_freq_alt, path_
     #cat("\n") #cat(sites) #cat(" | ") #cat(format(length(sites)),";")
     
 }
+
+# call function
+analyze_combined_strategies(path_sites_hitcount, path_freq_alt, path_data, path_implem, all)
+
 
