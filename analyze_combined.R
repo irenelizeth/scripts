@@ -85,6 +85,8 @@ analyze_combined_strategies = function(path_sites_hitcount, path_freq_alt, path_
         perImpl = 0.1
         cat("subject, pSites, pAlt, euSav\n") # proportion of sites, proportion of implementations, proportion of Energy usage Savings
         subjName = data$row.names[1]
+        if(is.null(subjName))
+            subjName = data$subject[1]
         
         while(per<=1){
             limit <- round(per*nrow(sorted_sites))
