@@ -83,7 +83,8 @@ analyze_combined_strategies = function(path_sites_hitcount, path_freq_alt, path_
         
         per = 0.1
         perImpl = 0.1
-        cat("subject, pSites, pAlt, euSav\n") # proportion of sites, proportion of implementations, proportion of Energy usage Savings
+        #cat("subject, pSites, pAlt, euSav\n") # proportion of sites, proportion of implementations, proportion of Energy usage Savings
+        cat("X, 10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90%, 100%\n") # format as matrix of values
         subjName = data$row.names[1]
         if(is.null(subjName))
             subjName = data$subject[1]
@@ -91,7 +92,7 @@ analyze_combined_strategies = function(path_sites_hitcount, path_freq_alt, path_
         while(per<=1){
             limit <- round(per*nrow(sorted_sites))
             sites <- sorted_sites[1:limit,1]
-            #cat("\n") #cat(sites) #cat(" | ") #cat(format(length(sites)),";")
+            #cat("\n") #cat(sites) #cat(" | ") #cat(format(length(sites)),";") <- old output format
             
             while(perImpl<=1){
                 # get results for given percentage of sites and same percentage of alternatives in top list (ee)
@@ -100,16 +101,31 @@ analyze_combined_strategies = function(path_sites_hitcount, path_freq_alt, path_
                 
                 #strSubj = unlist(strsplit(unlist(strsplit(result,split=",", fixed=TRUE))[1], split="-", fixed=TRUE))[1]
                 #subjName = unlist(strsplit(strSubj, split=":", fixed=TRUE))[2]
+                #cat(paste(subjName, ", ", per, ", ", perImpl,", ", val, "\n", sep="")) <- old output format
                 
-                cat(paste(subjName, ", ", per, ", ", perImpl,", ", val, "\n", sep=""))
+                # format as matrix of values (rows: % sites, cols: % alternatives)
+                if(perImpl==0.1){
+                    line = paste(per*100,"% ", sep="")
+                }
+                
+                if((1-perImpl)>=0.1){
+                        line = paste(line, ", ", val, sep="")
+                }
+                
+                if((1-perImpl)<0.01){
+                        line = paste(line, ", ", val, "\n", sep="")
+                        cat(line)
+                }
+
                 perImpl = perImpl + 0.1
             }
             
+        
             # results when All implementations are considered (not only the ones in top list)
             result =  analyze_alternatives(path_freq_alt, path_data, -1 , sites)
             val = format(as.double(unlist(strsplit(result,split=",", fixed=TRUE))[2]), digits=4)
             #writeLines(formatUL(list_results, label=""))
-            cat(paste(subjName, ", ", per, ", All, ", val, "\n", sep=""))
+            #cat(paste(subjName, ", ", per, ", All, ", val, "\n", sep="")) <- old output format (not printing all altern.)
 
             perImpl = 0.1 # restart proportion
             per = per + 0.1
