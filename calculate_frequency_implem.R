@@ -4,6 +4,15 @@
 # IMPLEMENTATIONS ARE SELECTED IF THEY HAVE THE HIGHER ENERGY REDUCTION FOR A GIVEN
 # SITE IN A SUBJECT APPLICATION.
 
+
+get_name <- function(str){
+
+    str <- unlist(strsplit(str, split="alternatives", fixed=TRUE))[2]
+    index <- as.integer(unlist(gregexpr(pattern="-", str))[2])
+    str <- substring(str,index+1,nchar(str))
+    return(str)
+}
+
 compute_frequency_implem <- function(){
     
     
@@ -24,6 +33,9 @@ compute_frequency_implem <- function(){
     
     # environment: hash for implementations
     hash_impl <- new.env()
+
+    # list of implementations
+    list_impl <- list()
 
     count <- 0
     
@@ -58,6 +70,13 @@ compute_frequency_implem <- function(){
             
             test_file = paste(wd,sd,"/","kw-mc.csv",sep="")
             
+            data_file = list.files(sd, pattern ='combinedFile*', all.files=FALSE)
+            file = paste(wd, sd,"/",data_file,sep="")
+            data_res = read.csv(file, stringsAsFactors=FALSE)
+            
+            #update list of implementations:
+            list_impl <- unique(unlist(c(list_impl, unique(unlist(lapply(data_res$alternative,get_name))))))
+            
             # only analyze sites with significant differences
             if(file.exists(test_file)){
                 
@@ -67,10 +86,6 @@ compute_frequency_implem <- function(){
                 # analyze which alternatives have a significant different energy usage from original
                 # obtain name of pairs comparing alternative and original energy usage only:
                 set_pairs = grep("original", row.names(test_res)) # retrieve row numbers of matching rows
-                
-                data_file = list.files(sd, pattern ='combinedFile*', all.files=FALSE)
-                file = paste(wd, sd,"/",data_file,sep="")
-                data_res = read.csv(file)
                 
                 mean_orig = mean(data_res[data_res$alternative==" original",1]) # mean original version of subject application
                 
@@ -86,9 +101,10 @@ compute_frequency_implem <- function(){
                         mean_alt = mean(data_res[data_res$alternative==alt_name,1])
                         
                         #get name of alternative
-                        str <- unlist(strsplit(alt, split="alternatives", fixed=TRUE))[2]
-                        index <- as.integer(unlist(gregexpr(pattern="-", str))[2])
-                        str <- substring(str,index+1,nchar(str))
+                        #str <- unlist(strsplit(alt, split="alternatives", fixed=TRUE))[2]
+                        #index <- as.integer(unlist(gregexpr(pattern="-", str))[2])
+                        #str <- substring(str,index+1,nchar(str))
+                        str <- get_name(alt)
                         alt <- unlist(strsplit(str, split="- original", fixed=TRUE))[1]
 
                         #add selected alternatives to the list
@@ -121,8 +137,14 @@ compute_frequency_implem <- function(){
     }
     
     #cat(count)
-    
+    cat(paste("total # implementations,  ", length(list_impl)-1, "\n\n", sep=""))
+    #writeLines(formatUL(list_impl, label=""))
+
+
 } # end compute_frequency_implem
+
+
+
 
 compute_frequency_implem()
 
