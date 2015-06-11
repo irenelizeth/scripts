@@ -43,7 +43,6 @@ compute_frequency_implem <- function(){
         
         flag = TRUE # review all alternative implementations
         
-        
         list_files = list.files(, all.files=FALSE)
         
         list_selAlt = list() # list of selected alternatives
@@ -107,12 +106,6 @@ compute_frequency_implem <- function(){
                         
                         # increase count of implementations being selected
                         count <- count + 1
-                        
-                        # this is to select the most energy efficient among all subject's sites
-                        #if(savings > max_sav){
-                        #    max_sav = savings
-                        #    max_sav_name = alt_name
-                        #}
                     }
                 }
             }
