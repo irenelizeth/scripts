@@ -90,7 +90,7 @@ compute_frequency_implem <- function(){
         #get subject's name
         subject <- sub("\\/","",unlist(strsplit(path,split="totaleu_"))[2])
         data_oi <- get_dataset_origImpls(subject)
-        #cat(paste("==== new path for: ", subject, "====\n\n", sep=""))
+        cat(paste("==== new path for: ", subject, "====\n\n", sep=""))
         
         flag = TRUE # review all alternative implementations
         
@@ -123,7 +123,10 @@ compute_frequency_implem <- function(){
             
             data_file = list.files(sd, pattern ='combinedFile*', all.files=FALSE)
             file = paste(wd, sd,"/",data_file,sep="")
+            #complete data set (All)
             data_res = read.csv(file, stringsAsFactors=FALSE)
+            #data set with only jcf
+            #data_res <- subset(data_res, grepl("java-util",data_res$alternative))
             
             #update list of implementations:
             list_impl <- unique(unlist(c(list_impl, unique(unlist(lapply(data_res$alternative,get_name))))))
