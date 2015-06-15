@@ -6,26 +6,56 @@
 
 
 get_name <- function(str){
-
     str <- unlist(strsplit(str, split="alternatives", fixed=TRUE))[2]
     index <- as.integer(unlist(gregexpr(pattern="-", str))[2])
     str <- substring(str,index+1,nchar(str))
     return(str)
 }
 
+changed_implementation <- function(str_impl, new_impl){
+    
+    elem <- unlist(strsplit(str_impl,split=","))
+    index <- length(elem)
+    str <- sub("\n","",elem[index])
+    original_impl <- gsub("\\.","\\-",sub("\n","",str))
+}
+
+# get the data set that contains the original implementations per site for the
+# corresponding subject app
+get_dataset_origImpls <- function(subject){
+    
+    #list of files with original implementations per site:
+    file <- switch(subject,barbecue="/Users/irene/Documents/GreenProject/scripts/SITES_SUBJECTS/barbecue-hitcount.sites.csv", commons_lang="/Users/irene/Documents/GreenProject/scripts/SITES_SUBJECTS/commons-lang-hitcount.sites.csv", jdepend="/Users/irene/Documents/GreenProject/scripts/SITES_SUBJECTS/jdepend-hitcount.sites.csv", jfreechart="/Users/irene/Documents/GreenProject/scripts/SITES_SUBJECTS/jfreechart-hitcount.sites.csv", jodatime="/Users/irene/Documents/GreenProject/scripts/SITES_SUBJECTS/jodatime-hitcount.sites.csv", xml_security="/Users/irene/Documents/GreenProject/scripts/SITES_SUBJECTS/xml-security-hitcount.sites.csv", gson="/Users/irene/Documents/GreenProject/scripts/SITES_SUBJECTS/gson-hitcount.sites.csv", commons_beanutils="/Users/irene/Documents/GreenProject/scripts/SITES_SUBJECTS/commons-beanutils-hitcount.sites.csv", commons_cli="/Users/irene/Documents/GreenProject/scripts/SITES_SUBJECTS/commons-cli-hitcount.sites.csv")
+    
+    data_res = read.csv(file, stringsAsFactors=FALSE)
+    #return(data_res$TS.calls)
+    return(data_res)
+}
+
+#get clean name of implementation
+get_name_impl <- function(str){
+    
+    elem <- unlist(strsplit(str,split=","))
+    index <- length(elem)
+    str <- sub("\n","",elem[index])
+    original_impl <- gsub("\\.","\\-",sub("\n","",str))
+    return(original_impl)
+    
+}
+
 compute_frequency_implem <- function(){
     
     
-    path_data <- c("/Users/irene/Documents/GreenProject/scripts/DATA_LEAP_SUBJECTS/jfreechart_jcf/results_jfreechart_jcf/",
-    "/Users/irene/Documents/GreenProject/scripts/DATA_LEAP_SUBJECTS/Apachexml/results_totaleu_apache_xml_sec/",
+    path_data <- c("/Users/irene/Documents/GreenProject/scripts/DATA_LEAP_SUBJECTS/jfreechart_jcf/results_totaleu_jfreechart/",
+    "/Users/irene/Documents/GreenProject/scripts/DATA_LEAP_SUBJECTS/Apachexml/results_totaleu_xml_security/",
     "/Users/irene/Documents/GreenProject/scripts/DATA_LEAP_SUBJECTS/Barbecue/results_totaleu_barbecue/",
     "/Users/irene/Documents/GreenProject/scripts/DATA_LEAP_SUBJECTS/Commons-beanutils/results_totaleu_commons_beanutils/",
     "/Users/irene/Documents/GreenProject/scripts/DATA_LEAP_SUBJECTS/Commons-cli/results_totaleu_commons_cli/",
     "/Users/irene/Documents/GreenProject/scripts/DATA_LEAP_SUBJECTS/Commons-lang/results_totaleu_commons_lang/",
     "/Users/irene/Documents/GreenProject/scripts/DATA_LEAP_SUBJECTS/Gson/results_totaleu_gson/",
     "/Users/irene/Documents/GreenProject/scripts/DATA_LEAP_SUBJECTS/Jdepend/results_totaleu_jdepend/",
-    "/Users/irene/Documents/GreenProject/scripts/DATA_LEAP_SUBJECTS/Jodatime/results_totaleu_jodatime/",
-    "/Users/irene/Documents/GreenProject/scripts/DATA_LEAP_SUBJECTS/Jtopas/results_totaleu_jtopas/")
+    "/Users/irene/Documents/GreenProject/scripts/DATA_LEAP_SUBJECTS/Jodatime/results_totaleu_jodatime/")
+    
     
     list_results = list()
     
@@ -33,10 +63,14 @@ compute_frequency_implem <- function(){
     
     # environment: hash for implementations
     hash_impl <- new.env()
-
+    
     # list of implementations
     list_impl <- list()
-
+    # count of changes to impl in JCF (Java Collection Framework)
+    count_jcf <- 0
+    count_other <- 0
+    count_sites <- 0
+    # counter for implementations being selected
     count <- 0
     
     for(path in path_data){
@@ -53,6 +87,11 @@ compute_frequency_implem <- function(){
         setwd(path)
         wd = path
         
+        #get subject's name
+        subject <- sub("\\/","",unlist(strsplit(path,split="totaleu_"))[2])
+        data_oi <- get_dataset_origImpls(subject)
+        #cat(paste("==== new path for: ", subject, "====\n\n", sep=""))
+        
         flag = TRUE # review all alternative implementations
         
         list_files = list.files(, all.files=FALSE)
@@ -68,6 +107,18 @@ compute_frequency_implem <- function(){
         # iterate over folders
         for (sd in list_files){
             
+            #get site number
+            siteNum <- as.integer(unlist(strsplit(sd,"site"))[2])
+            
+            # get the index of the corresponding site number
+            indexSite  <- which(data_oi$Allocation.Site==siteNum)
+            
+            #cat(paste(sd,"\n","site: ",sep=""))
+            #cat(paste(sd,"\n","site: ",siteNum," -- > index: ", indexSite, "\n", sep=""))
+            # get name of implementation in site before change
+            name_original <- get_name_impl(data_oi$TS.calls[indexSite])
+            #cat(paste(name_original,"\n",sep=""))
+            
             test_file = paste(wd,sd,"/","kw-mc.csv",sep="")
             
             data_file = list.files(sd, pattern ='combinedFile*', all.files=FALSE)
@@ -76,6 +127,31 @@ compute_frequency_implem <- function(){
             
             #update list of implementations:
             list_impl <- unique(unlist(c(list_impl, unique(unlist(lapply(data_res$alternative,get_name))))))
+            
+            #obtain possible change (implementation with mininum energy usage )
+            str_impl <- data_res[data_res$eu==min(data_res$eu),]$alternative
+            alt_impl <- get_name(str_impl)
+            #how many changes to implementation in JCF:
+            str1 <- unlist(strsplit(alt_impl, split="java-util", fixed=TRUE))[2]
+            if(!is.na(str1)){
+                #cat("jcf impl: ", alt_impl, "\n", sep="")
+                temp = unlist(strsplit(name_original, split="-"))
+                index = length(temp)
+                ori_impl = temp[index]
+                
+                    # original impl is generic type, if it is not contained in alt then it is change (approximation)
+                    if(!grepl(ori_impl, alt_impl)){
+                        count_jcf = count_jcf + 1
+                        #cat(paste("original: ",ori_impl, "/ alternative: ",alt_impl, "\n", sep=""))
+                    }
+                    
+                }else{
+                #cat("other impl: ", alt_impl, "\n", sep="")
+                count_other <- count_other + 1
+                
+            }
+            
+            count_sites <- count_sites + 1
             
             # only analyze sites with significant differences
             if(file.exists(test_file)){
@@ -106,7 +182,7 @@ compute_frequency_implem <- function(){
                         #str <- substring(str,index+1,nchar(str))
                         str <- get_name(alt)
                         alt <- unlist(strsplit(str, split="- original", fixed=TRUE))[1]
-
+                        
                         #add selected alternatives to the list
                         list_selAlt = c(list_selAlt, alt)
                         
@@ -117,7 +193,7 @@ compute_frequency_implem <- function(){
                             tempCount <- hash_impl[[alt]]
                             hash_impl[[alt]] <- tempCount + 1
                             #cat(paste(alt, ": ", hash_impl[[alt]], "\n", sep=""))
-
+                            
                         }
                         
                         # increase count of implementations being selected
@@ -132,15 +208,19 @@ compute_frequency_implem <- function(){
     cat("\n")
     
     #print results:
-    for(item in ls(hash_impl)){
-        cat(paste(item, ", ", round(hash_impl[[item]]/count,3),"\n", sep=""))
-    }
+    #for(item in ls(hash_impl)){
+    #    cat(paste(item, ", ", round(hash_impl[[item]]/count,3),"\n", sep=""))
+    #}
     
     #cat(count)
     cat(paste("total # implementations,  ", length(list_impl)-1, "\n\n", sep=""))
     #writeLines(formatUL(list_impl, label=""))
-
-
+    cat(paste("total changes to JCF impl, ", count_jcf, "\n", sep=""))
+    cat(paste("total changes to other impl, ", count_other, "\n", sep=""))
+    cat(paste("total No. sites, ", count_sites, "\n", sep=""))
+    
+    
+    
 } # end compute_frequency_implem
 
 
