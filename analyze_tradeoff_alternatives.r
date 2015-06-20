@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # THIS R SCRIPT ANALYZES THE TRADEOFF BETWEEN ENERGY USAGE AND SIZE OF ALTERNATIVE IMPLEMENTATIONS
 # BY SELECTING THE TOP X ALTERNATIVES IMPLEMENTATIONS OF A COLLECTION AND THE ENERGY USAGE OF THE
 # APPLICATION WHEN ONE OF THOSE TOP ALTERNATIVES ARE SELECTED. TO FIND THE CORRECT CUTOFF
@@ -8,6 +10,8 @@
 # @path_data: path to the folder containing the energy usage data for the subject app
 # @top_par: percentage of top alternatives implementations to consider in total
 
+
+args <- commandArgs(TRUE)
 
 get_top_alternatives_results = function(path_freq_alt, path_data, top_par, list_sites){
 
@@ -109,9 +113,9 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
             
             data_file = list.files(sd, pattern ='combinedFile*', all.files=FALSE)
             file = paste(wd, sd,"/",data_file,sep="")
-            data_res = read.csv(file)
-            
-            mean_orig = mean(data_res[data_res$alternative==" original",1]) # mean original version of subject application
+            data_res = read.csv(file, stringsAsFactors=FALSE)
+                
+            mean_orig = mean(as.integer(data_res[data_res$alternative==" original",1])) # mean original version of subject application
             
             for(IDpair in set_pairs){
                 # is this comparison significant? dif.com.difference="TRUE" and statistic="alternative-original"
@@ -122,7 +126,7 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
                     
                     alt_name = substr(alt, 1, nchar(alt)-nchar("- original"))
                     #get energy usage mean for this alternative:
-                    mean_alt = mean(data_res[data_res$alternative==alt_name,1])
+                    mean_alt = mean(as.integer(data_res[data_res$alternative==alt_name,1]))
                     
                     # is this alternative in top alternatives list?
                     if(length(topM)>0){
@@ -137,6 +141,9 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
                         #cat(paste("Analyzing alternative: ",alt, sep=""))
                         list_selAlt = c(list_selAlt, alt)
                         list_mEUAlt = c(list_mEUAlt, mean_alt)
+                        
+                        #    cat(paste("site: ", sd, ",", alt_name, ", mean original:", mean_orig, "; mean_alt: ", mean_alt, "\n", sep=""))
+
                         savings = ((mean_orig - mean_alt)/mean_orig)*100
                         
                         if(savings > max_sav){
@@ -158,3 +165,11 @@ analyze_alternatives = function(path_freq_alt, path_data, top_par, list_sites){
 
 
 } # end function analyze_alternatives
+
+# calling function
+path_freq_alt = args[1]
+path_data = args[2]
+top_par = args[3]
+list_sites = args[4]
+
+get_top_alternatives_results(path_freq_alt, path_data, top_par, list_sites)
