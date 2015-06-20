@@ -13,8 +13,8 @@ listSignificantDifferentAlternatives = function(){
 	# iterate over folders
 	for (sd in list){
 		print(sd)
-        	file_name = list.files(sd, pattern ='*.csv', all.files=FALSE)
-        	wd = getwd()
+        file_name = list.files(sd, pattern ='*.csv', all.files=FALSE)
+        wd = getwd()
 		file_name = paste(wd,"/",sd,"/",file_name,sep="")
 
 		#print(file_name)
