@@ -15,7 +15,7 @@ suppressPackageStartupMessages(require(optparse))
     help="single log file containing GA aggregated data results"),
     make_option(c("-n","--name"), action="store", default="app", type="character",
     help="subject application's name"),
-    make_option(c("-nr", "--numruns"), action="store", default=10, type="integer",
+    make_option(c("-r", "--numruns"), action="store", default=10, type="integer",
     help="number of runs the ga was executed"),
     make_option(c("-e","--maxeval"), action="store", default=5000, type="integer",
     help="maximum total of evaluations per run defined for GA algorithm"),
@@ -60,13 +60,13 @@ get_data_runs <- function(data_set, file){
             numPop <- 1
             runN <- data.frame(row.names=FALSE)
             # advance row indice to exclude extra individuals generated in last run:
-            print(paste('ind index at: ', ind, ' before removing extra ind', sep=''))
+            #print(paste('ind index at: ', ind, ' before removing extra ind', sep=''))
             ind <- ind + 50 + extra_ind
-            print(paste('ind index at: ', ind, ' after removing extra ind', sep=''))
+            #print(paste('ind index at: ', ind, ' after removing extra ind', sep=''))
         }
         else if (ind < nrow(data_set)){
-            if(nrow(runN)==1)
-                print(paste('--> Next Run: ind index at: ', ind, ', until index:', (ind+49), sep=''))
+            #if(nrow(runN)==1)
+            #    print(paste('--> Next Run: ind index at: ', ind, ', until index:', (ind+49), sep=''))
             runN <- rbind(runN, data_set[ind:(ind+49),])
             numPop <- numPop + 1
             gen <- gen + 1
@@ -83,8 +83,8 @@ get_data_runs <- function(data_set, file){
     
     print(paste('file name for csv files is: ', file, sep=""))
 
-    write.csv(allpop, file=paste(file, appName, "_objs.csv", sep=''))
-    write.csv(allsol, file=paste(file, appName, "_sols.csv", sep=''))
+    write.csv(allpop, file=paste(file, appName, "_objs.csv", sep=''), row.names=FALSE)
+    write.csv(allsol, file=paste(file, appName, "_sols.csv", sep=''), row.names=FALSE)
 }
 
 if(!is.na(opt$file)){
