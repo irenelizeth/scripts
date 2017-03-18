@@ -1,4 +1,5 @@
 #!/Library/Frameworks/R.framework/Resources/bin/Rscript 
+#/usr/lib/R/bin/Rscript
 
 #Irene Manotas
 #2017-03-07
@@ -14,7 +15,8 @@ suppressPackageStartupMessages(require(lattice))
 suppressPackageStartupMessages(require(rcompanion))
 suppressPackageStartupMessages(require(multcompView))
 suppressPackageStartupMessages(require(optparse))
-
+suppressPackageStartupMessages(require(lsr))
+suppressPackageStartupMessages(require(methods)) # required by lsr library to load function 'is'
 
 option_list = list(
     
@@ -86,17 +88,14 @@ compute_wilcoxon <- function(data, adjust.method){
     data <- mutate(data, Group=factor(data$Group, levels(unique(data$Group))))
     PT <- pairwise.wilcox.test(data$Value, data$Group, p.adjust.method=adjust.method)
     
-    cat("\n\n Results from pairwise Wilcoxon test:\n\n")
+    #cat("\n\n Results from pairwise Wilcoxon test:\n\n")
     print(PT)
     PT$p.value
     PT <- PT$p.value
-    #print(PT)
     PT1 <- fullPTable(PT)
     
     res <- multcompLetters(PT1, compare="<", threshold=alpha, Letters=letters, reversed=FALSE)
     print(res)
-    
-    #print(res)
     ## groups sharing same character identify groups that are not significantly different
     
     dimMg <- dim(res$LetterMatrix)
@@ -105,7 +104,7 @@ compute_wilcoxon <- function(data, adjust.method){
         cat("\nGroups are not significantly different from each other! \n")
         
     }else if(dimMg[1]>2){ # more than two groups to compare
-        cat("\nGroups are significantly different:")
+        #cat("\nGroups are significantly different:")
         groupLetters <- res$Letters
         suppressWarnings(suppressMessages(library(sets)))
         setDiffGroups <- set()
@@ -133,21 +132,17 @@ compute_wilcoxon <- function(data, adjust.method){
 # post-hoc analysis: perform a Dunn Test
 compute_dunntest <- function(data, adjust.method, q){
 
-    suppressWarnings(suppressMessages(library(sets)))
     suppressWarnings(suppressMessages(library(dunn.test)))
-    
-
-    cat("\n\nResults from Dunn Test for multicomparison of groups:\n")
-    setDiffGroups <- set()
-    
+     
+    #cat("\n\nResults from Dunn Test for multicomparison of groups:\n")
     # from package FSA
     #PTdt <- dunnTest(data$Value, data$Group, method=adjust.method, two.sided=FALSE)
     #print(PTdt)
     #PTdt <- PTdt$res
     #rdt <- cldList(comparison=PTdt$Comparison, p.value = PTdt$P.adj, threshold=alpha)
-    
-    # from dunn.test package
-    PT2 <- dunn.test(data$Value, data$Group, method=adjust.method)
+    write.csv(data, file="data_st.csv")    
+    # dunn.test function from dunn.test package
+    PT2 <- dunn.test(data$Value, data$Group, method=adjust.method, table=FALSE, kw=FALSE)
     res <- data.frame(PT2$P, PT2$P.adjusted, PT2$comparisons, stringsAsFactors=FALSE)
     colnames(res) <- c("P", "P.adj", "test")
     
@@ -155,59 +150,56 @@ compute_dunntest <- function(data, adjust.method, q){
     # res <- res[order(P),] #sort results based on p.raw.value ?
     # find largest p.adjusted value for which p.adj < Q ?
     # accept as significant all tests below largest.p.adjusted < Q ?
-    
+
+    listDiffGroups <- list()
+    listESGroups <- list()
+    #print(paste("Q: ", q, sep=""))
     for(k in 1:nrow(res)){
-        if(adjust.method=="BH" && res$P.adj[k] < q)
+        if(adjust.method=="BH" && res$P.adj[k] < q){
             #cat(res$test[k])
-            setDiffGroups <- setDiffGroups + set(res$test[k])
-        else if (res$P.adj[k] < 0.05)
-            setDiffGroups <- setDiffGroups + set(res$test[k])
-            
+            groups <- unlist(strsplit(res$test[k],"-"))
+            group1 <- groups[1]
+            group2 <- groups[2]
+            group1 <- gsub(" ", "", group1)
+            group2 <- gsub(" ", "", group2)
+            #print(group1)
+            if(group1=="Original" || group2=="Original"){
+                if(group1=="Original")
+                    sGroup=group2
+                else
+                    sGroup=group1
+                listDiffGroups <- c(listDiffGroups, sGroup)  
+                g1 <- as.vector(unlist(data[data$Group==group1,][2]))
+                g2 <- as.vector(unlist(data[data$Group==group2,][2]))
+                #print(g1)
+                #print(g2)
+                # compute Cohen's d effect of size between signficant treatments (groups)
+                effect_size <- cohensD(g1, g2) # from library(lsr)
+                #print(effect_size)
+                listESGroups <- c(listESGroups, effect_size)
+            }
+        }else if (res$P.adj[k] < 0.05)
+            listDiffGroups <- c(listDiffGroups, res$test[k])
     }
 
-    #TO-DO: sort p.adj-values, find largest p-value that is less than (i/m)*Q, where i is the rank,
-    # m is the total number of comparisons, and Q is the choosen false discovery rate.
-    
-    # BH --> p.adjusted value = p.raw value * (m/i)
-    # sort results by p.unadj or p.raw values (to consider rank position)
-    # find largest p.adjusted value for which p.adj < Q
-    # (test (comparison of groups) is significant if p.adjusted value < Q (false discovery rate))
-    
-    #groups <- as.character(rdt$Group)
-    #groupLetters <- as.character(rdt$Letter)
-    
-    #for(k in 2:length(groups)){
-    #    if(!(identical(groupLetters[k], groupLetters[k-1]))){
-    #        if(!set_contains_element(setDiffGroups, groupLetters[k])){
-    #            setDiffGroups <- setDiffGroups + set(groups[k])
-    #        }
-    #
-    #        if(!set_contains_element(setDiffGroups, groupLetters[k-1])){
-    #            setDiffGroups <- setDiffGroups + set(groups[k-1])
-    #        }
-    #    }
-    #
-    #}
-    
-    return(setDiffGroups)
-    cat("End Dunn Test Results\n\n")
+    return(list(listDiffGroups, listESGroups))
 }
 
 
 # perform pot-hoc analysis: multicomparison between groups of data
 get_results_multicomparison <- function(data, pvalue){
 
-    #adjust.method = "BH"
     adjust.method = "BH"
     # false discovery rate for BH method:
     q = 0.10
     
     #if p-value < alpha then perform multicomparison test:
     if(pvalue < alpha){
-    
         #cat(paste("Significant difference found, p-value: ", pvalue, sep=""))
-        cat(pvalue)
-        print(compute_dunntest(data, adjust.method, q))
+        res <- compute_dunntest(data, adjust.method, q)
+        cat(unlist(res[1]))
+        cat(";")
+        cat(unlist(res[2]))
 
     }else{
         cat(paste("\n NO significant difference found, p-value ", pvalue,"\n", sep=""))
