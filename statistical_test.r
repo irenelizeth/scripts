@@ -140,20 +140,16 @@ compute_dunntest <- function(data, adjust.method, q){
     #print(PTdt)
     #PTdt <- PTdt$res
     #rdt <- cldList(comparison=PTdt$Comparison, p.value = PTdt$P.adj, threshold=alpha)
-    write.csv(data, file="data_st.csv")    
+
     # dunn.test function from dunn.test package
     PT2 <- dunn.test(data$Value, data$Group, method=adjust.method, table=FALSE, kw=FALSE)
     res <- data.frame(PT2$P, PT2$P.adjusted, PT2$comparisons, stringsAsFactors=FALSE)
     colnames(res) <- c("P", "P.adj", "test")
     
-    # TO-DO: check process to accept test based on p.adjusted values
-    # res <- res[order(P),] #sort results based on p.raw.value ?
-    # find largest p.adjusted value for which p.adj < Q ?
-    # accept as significant all tests below largest.p.adjusted < Q ?
+    # accept as significant all tests for which largest.p.adjusted < q
 
     listDiffGroups <- list()
     listESGroups <- list()
-    #print(paste("Q: ", q, sep=""))
     for(k in 1:nrow(res)){
         if(adjust.method=="BH" && res$P.adj[k] < q){
             #cat(res$test[k])
@@ -163,23 +159,28 @@ compute_dunntest <- function(data, adjust.method, q){
             group1 <- gsub(" ", "", group1)
             group2 <- gsub(" ", "", group2)
             #print(group1)
+            g1 <- vector()
             if(group1=="Original" || group2=="Original"){
-                if(group1=="Original")
+                if(group1=="Original"){
                     sGroup=group2
-                else
+                    g1 <- as.vector(unlist(data[data$Group==sGroup,][2]))
+                }else{
                     sGroup=group1
+                    g1 <- as.vector(unlist(data[data$Group==sGroup,][2]))
+                }
+
                 listDiffGroups <- c(listDiffGroups, sGroup)  
-                g1 <- as.vector(unlist(data[data$Group==group1,][2]))
-                g2 <- as.vector(unlist(data[data$Group==group2,][2]))
+
+                g2 <- as.vector(unlist(data[data$Group=="Original",][2]))
                 #print(g1)
                 #print(g2)
                 # compute Cohen's d effect of size between signficant treatments (groups)
                 effect_size <- cohensD(g1, g2) # from library(lsr)
-                #print(effect_size)
                 listESGroups <- c(listESGroups, effect_size)
             }
-        }else if (res$P.adj[k] < 0.05)
-            listDiffGroups <- c(listDiffGroups, res$test[k])
+        }
+        #else if (res$P.adj[k] < 0.05)
+        #    listDiffGroups <- c(listDiffGroups, res$test[k])
     }
 
     return(list(listDiffGroups, listESGroups))
@@ -189,21 +190,34 @@ compute_dunntest <- function(data, adjust.method, q){
 # perform pot-hoc analysis: multicomparison between groups of data
 get_results_multicomparison <- function(data, pvalue){
 
+    # write data values for every group under analysis
+    write.table(data, file="data_st.csv", sep=",",append=TRUE)    
+    
     adjust.method = "BH"
     # false discovery rate for BH method:
-    q = 0.10
+    q = 0.05
+    
+    dataEffectSize = data.frame(Group=character(0), EffectSize=integer(0))
     
     #if p-value < alpha then perform multicomparison test:
     if(pvalue < alpha){
-        #cat(paste("Significant difference found, p-value: ", pvalue, sep=""))
         res <- compute_dunntest(data, adjust.method, q)
-        cat(unlist(res[1]))
-        cat(";")
-        cat(unlist(res[2]))
-
+        
+        if(length(unlist(res[1]))>0){
+          cat(unlist(res[1]))
+          cat(";")
+          cat(unlist(res[2]))
+       
+          dataEffectSize = data.frame(Group=as.vector(unlist(res[1])), EffectSize=as.double(unlist(res[2])))
+        }else{
+            cat("No significant groups after post hoc analysis (multicomparison)")
+        }
     }else{
-        cat(paste("\n NO significant difference found, p-value ", pvalue,"\n", sep=""))
+        cat("No significant difference found")
     }
+
+    write.table(dataEffectSize, file="data_effectsize.sigGroups.csv", sep=",", append=TRUE)    
+
 }# end multicomparison
 
 pvalue <- 1
