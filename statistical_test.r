@@ -1,5 +1,4 @@
-#!/Library/Frameworks/R.framework/Resources/bin/Rscript 
-#/usr/lib/R/bin/Rscript
+#!/usr/bin/env Rscript 
 
 #Irene Manotas
 #2017-03-07
