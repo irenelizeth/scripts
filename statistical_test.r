@@ -14,6 +14,7 @@ suppressPackageStartupMessages(require(lattice))
 suppressPackageStartupMessages(require(rcompanion))
 suppressPackageStartupMessages(require(multcompView))
 suppressPackageStartupMessages(require(optparse))
+suppressPackageStartupMessages(require(effsize))
 suppressPackageStartupMessages(require(lsr))
 suppressPackageStartupMessages(require(methods)) # required by lsr library to load function 'is'
 
@@ -54,7 +55,7 @@ get_result_statistical_test <- function(namesg, samplesg){
         number_samples = length(unlist(strsplit(samplesg[1], split=",")))
         
         for(k in 1:total_groups){
-            
+            #cat(paste("analyzing Group: ",k, "-> ",namesg[k],"\n", sep=""))
             namegk <- namesg[k]
             #cat(paste("analyzing group: ", namegk,"\n", sep=""))
             asgk <- as.double(unlist(strsplit(samplesg[k], split=",")))
@@ -174,7 +175,8 @@ compute_dunntest <- function(data, adjust.method, q){
                 #print(g1)
                 #print(g2)
                 # compute Cohen's d effect of size between signficant treatments (groups)
-                effect_size <- cohensD(g1, g2) # from library(lsr)
+                #effect_size <- cohensD(g1, g2) # from library(lsr)
+                effect_size <- cliff.delta(g1,g2)$estimate # from library(effsize)
                 listESGroups <- c(listESGroups, effect_size)
             }
         }
