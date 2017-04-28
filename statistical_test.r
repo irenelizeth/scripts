@@ -39,13 +39,14 @@ list_samples <- unlist(strsplit(opt$samples, ";"))
 alpha <- opt$alpha
 
 # global variables
-data <- data.frame(row.names=FALSE)
+
 
 
 # namesg: names for groups of data separated by semicolons
 # samplesg: list of samples for groups of data separated by commas, groups separated by semicolon
 get_result_statistical_test <- function(namesg, samplesg){
-
+	data <- data.frame(row.names=FALSE)
+	
     if(length(namesg)==0 || length(namesg)==1)
         stop("incomplete names provided for groups of data (nominal vble values)")
 
@@ -134,13 +135,7 @@ compute_dunntest <- function(data, adjust.method, q){
 
     suppressWarnings(suppressMessages(library(dunn.test)))
      
-    #cat("\n\nResults from Dunn Test for multicomparison of groups:\n")
-    # from package FSA
-    #PTdt <- dunnTest(data$Value, data$Group, method=adjust.method, two.sided=FALSE)
-    #print(PTdt)
-    #PTdt <- PTdt$res
-    #rdt <- cldList(comparison=PTdt$Comparison, p.value = PTdt$P.adj, threshold=alpha)
-
+   	#data["Group"] <- lapply(data["Group"], function(x){gsub("-",".", x)})
     # dunn.test function from dunn.test package
     PT2 <- dunn.test(data$Value, data$Group, method=adjust.method, table=FALSE, kw=FALSE)
     res <- data.frame(PT2$P, PT2$P.adjusted, PT2$comparisons, stringsAsFactors=FALSE)
@@ -152,7 +147,9 @@ compute_dunntest <- function(data, adjust.method, q){
     listESGroups <- list()
     for(k in 1:nrow(res)){
         if(adjust.method=="BH" && res$P.adj[k] < q){
-            #cat(res$test[k])
+            #cat(paste("Row:",k,") ",sep=""))
+            #cat(paste(res$test[k],"\n",sep=""))
+            
             groups <- unlist(strsplit(res$test[k],"-"))
             group1 <- groups[1]
             group2 <- groups[2]
@@ -163,19 +160,20 @@ compute_dunntest <- function(data, adjust.method, q){
             if(group1=="Original" || group2=="Original"){
                 if(group1=="Original"){
                     sGroup=group2
-                    g1 <- as.vector(unlist(data[data$Group==sGroup,][2]))
+                    g1 <- as.double(as.vector(unlist(data[data$Group==sGroup,][2])))
                 }else{
                     sGroup=group1
-                    g1 <- as.vector(unlist(data[data$Group==sGroup,][2]))
+                    g1 <- as.double(as.vector(unlist(data[data$Group==sGroup,][2])))
                 }
-
+				
+				#cat(paste("\nAdding significant group:", sGroup,"\n",sep=""))
                 listDiffGroups <- c(listDiffGroups, sGroup)  
-
-                g2 <- as.vector(unlist(data[data$Group=="Original",][2]))
-                #print(g1)
-                #print(g2)
-                # compute Cohen's d effect of size between signficant treatments (groups)
+                
+                g2 <- as.double(as.vector(unlist(data[data$Group=="Original",][2])))
+                 # compute Cohen's d effect of size between signficant treatments (groups)
                 #effect_size <- cohensD(g1, g2) # from library(lsr)
+                
+                #compute cliff's delta effect size
                 effect_size <- cliff.delta(g1,g2)$estimate # from library(effsize)
                 listESGroups <- c(listESGroups, effect_size)
             }
@@ -190,7 +188,9 @@ compute_dunntest <- function(data, adjust.method, q){
 
 # perform pot-hoc analysis: multicomparison between groups of data
 get_results_multicomparison <- function(data, pvalue){
-
+	
+	result <- list()
+	
     # write data values for every group under analysis
     write.table(data, file="data_st.csv", sep=",",append=TRUE)    
     
@@ -208,16 +208,21 @@ get_results_multicomparison <- function(data, pvalue){
           cat(unlist(res[1]))
           cat(";")
           cat(unlist(res[2]))
+          result <- list(unlist(res[1]), unlist(res[2]) )
        
           dataEffectSize = data.frame(Group=as.vector(unlist(res[1])), EffectSize=as.double(unlist(res[2])))
         }else{
             cat("No significant groups after post hoc analysis (multicomparison)")
+            result <-list("No significant groups after post hoc analysis (multicomparison)")
         }
     }else{
         cat("No significant difference found")
+        result <- list("No significant difference found")
     }
 
     write.table(dataEffectSize, file="data_effectsize.sigGroups.csv", sep=",", append=TRUE)    
+    
+    return(result)
 
 }# end multicomparison
 
