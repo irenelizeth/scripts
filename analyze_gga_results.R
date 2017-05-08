@@ -29,55 +29,65 @@ collect_data_for_each_runGAAlgorithm <- function(data_gga, numRuns, samplesPerSo
 	# indices for all populations headers (Value)
 	ind_df <- which(data_gga$Group=='Value')
 	print(ind_df)
-
-	for(k in 1:(numRuns)){
+	start_ind <- 1
+	end_ind <- 1
 	
-		if(k==1){
-			ind_df_run <- ind_df[1:(numGen)]
-			start_ind <- 1
-			end_ind <- ind_df_run[length(ind_df_run)]+rows_pop
-		}
-		else if(k > 1 && k < numRuns)	{
-			ind_df_run <- ind_df[(numGen*(k-1) +1):(numGen*(k)+1)] 
-			start_ind <- ind_df_run[1]+1
-			end_ind <- ind_df_run[length(ind_df_run)]+rows_pop
+	if(length(ind_df) >= numGen*numRuns){
+	
+		for(k in 1:numRuns){
+			cat(paste('Data for run', k,"\n", sep=""))
+			if(k==1){
+				ind_df_run <- ind_df[1:(numGen)]
+				start_ind <- 1
+				end_ind <- ind_df_run[length(ind_df_run)]+rows_pop
 			}
-		else{
-			ind_df_run <- ind_df[(numGen*(k-1)+2):length(ind_df)]
-			start_ind <- ind_df_run[1]+1
-			end_ind <- ind_df_run[length(ind_df_run)]+rows_pop
+			else if(k > 1 && k < numRuns)	{
+				ind_df_run <- ind_df[(numGen*(k-1) +1):(numGen*(k)+1)] 
+				start_ind <- ind_df_run[1]+1
+				end_ind <- ind_df_run[length(ind_df_run)]+rows_pop
+			}else{
+				ind_df_run <- ind_df[(numGen*(k-1)+2):length(ind_df)]
+				start_ind <- ind_df_run[1]+1
+				end_ind <- ind_df_run[length(ind_df_run)]+rows_pop
+			}
+				
+			cat(paste('indices [', start_ind , "-",end_ind,"]\n", sep=""))
+			# collect data for all generations in the run (trial)
+			df_run <- data_gga[start_ind:end_ind,]
+			df_run <- df_run[-(which(df_run$Group=='Value')), ]
+			df_run <- droplevels(df_run)
+			df_run <- df_run[,c("Group", "Value")]
+			num_gen <- nrow(df_run)/rows_pop
+	
+			if(verbose){
+				print(paste("For run ",k, ":", sep=""))
+				#print(ind_df_run)
+				cat(paste("indices for data_run: [", start_ind, ":", end_ind, "]", sep=""))
+				cat("\n")
+				cat("Number of generations in data of run: ")
+				cat(num_gen)
+				cat("\n")
+			}
+	
+			write.csv(file=paste("data_run_",k,".csv", sep=""), df_run, row.names=FALSE)
 		}
-	
-		# collect data for all generations in the run (trial)
-		df_run <- data_gga[start_ind:end_ind,]
-		df_run <- df_run[-(which(df_run$Group=='Value')), ]
-		df_run <- droplevels(df_run)
-		df_run <- df_run[,c("Group", "Value")]
-		num_gen <- nrow(df_run)/rows_pop
-	
-		if(verbose){
-			print(paste("For run ",k, ":", sep=""))
-			#print(ind_df_run)
-			cat(paste("indices for data_run: [", start_ind, ":", end_ind, "]", sep=""))
-			cat("\n")
-			cat("Number of generations in data of run: ")
-			cat(num_gen)
-			cat("\n")
-		}
-	
-		write.csv(file=paste("data_run_",k,".csv", sep=""), df_run, row.names=FALSE)
-
+	}else{
+		stop(paste("incomplete data for runs: Only ", length(ind_df)+1, " populations registered \n", sep=""))
 	}
 } # end function collect_data_for_each_runGAAlgorithm
 
 
 ### START FUNCTION ###
 
+# df_run: data set for a given run of the algorithm (csv file output of collect_data_for_each_runGAAlgorithm)
+# rows_pop: total rows expected per population (samplesPerSolution*(num_gen+1))
+# num_gen: total number of populations generated in generations including the initial population
+# popSize: size of each population (ga parameter)
 collect_generations_data <- function(df_run, rows_pop, num_gen, popSize){
 	
 	s = 1 
 	e = rows_pop
-	table_summary <- data.frame(row.names=FALSE, stringsAsFactors=FALSE)
+	table_summary <- data.frame(row.names=NULL, stringsAsFactors=FALSE)
 
 	for(pop in 1:num_gen){
 		cat(paste("Collect information for Generation: ", pop, "\n", sep=""))
@@ -95,7 +105,7 @@ collect_generations_data <- function(df_run, rows_pop, num_gen, popSize){
 			cat("Printing best solutions: \n")
 			print(data_pop)
 			table_summary <- rbind(table_summary, data_pop)
-		
+
 	}
 	
 	return(table_summary)
