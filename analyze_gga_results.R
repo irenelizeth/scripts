@@ -10,6 +10,7 @@ samplesPerSol <- 15
 popSize <- 50
 numMaxEval <- 5000
 verbose = TRUE
+rows_pop <- samplesPerSol*(popSize+1)
 
 # collect data for each run that the GA was run in the experiment
 # data_gga <- data_st.csv file with all samples collected while GA experiment was runnning
@@ -83,8 +84,10 @@ collect_data_for_each_runGAAlgorithm <- function(data_gga, numRuns, samplesPerSo
 # rows_pop: total rows expected per population (samplesPerSolution*(num_gen+1))
 # num_gen: total number of populations generated in generations including the initial population
 # popSize: size of each population (ga parameter)
-collect_generations_data <- function(df_run, rows_pop, num_gen, popSize){
+# best_sol: name of best solution found by algorithm for this run
+collect_generations_data <- function(df_run, rows_pop, num_gen, popSize, best_sol){
 	
+	track_best_sol = "Best Solution Tracking:\n";
 	s = 1 
 	e = rows_pop
 	table_summary <- data.frame(row.names=NULL, stringsAsFactors=FALSE)
@@ -99,14 +102,22 @@ collect_generations_data <- function(df_run, rows_pop, num_gen, popSize){
 		# clean up data frame for population:
 		df_pop <- droplevels(df_pop)
 		
+		mean_pop <- aggregate(.~Group, df_pop, mean)
+		ind_bs <- which(mean_pop$Group==best_sol,)
+		if(length(ind_bs)>0){
+			track_best_sol <- cat(paste(track_best_sol, "\n ", "Gen.",pop, ") MEU Best Solution: ", mean_pop[ind_bs,2], sep=""))
+		}
+		
 		# for each generation in the data of run: collect population's information:
-		data_pop <- collect_info_significantGroups(df_pop, k, pop, popSize, TRUE, table_summary)	
+		data_pop <- collect_info_significantGroups(df_pop, pop, popSize, TRUE, table_summary)	
 		
 			cat("Printing best solutions: \n")
 			print(data_pop)
 			table_summary <- rbind(table_summary, data_pop)
 
 	}
+	
+	cat(track_best_sol)
 	
 	return(table_summary)
 		
@@ -176,11 +187,10 @@ compute_CohensCliff_ESM <- function(df_samples){
 ### START FUNCTION ###
 
 #sam_exp: data points for solutions in generation's population
-#trialID: in which # of trial (run) was this generation produced
 #genID: # of generation
 table_summary <- data.frame(row.names=FALSE)
 
-collect_info_significantGroups <- function(sam_exp, trialID, genID, popSize, verbose, table_summary){
+collect_info_significantGroups <- function(sam_exp, genID, popSize, verbose, table_summary){
 	
 	mean_exp <- aggregate(.~Group, data=sam_exp, mean)
 
@@ -221,8 +231,6 @@ collect_info_significantGroups <- function(sam_exp, trialID, genID, popSize, ver
 		
 			# then compute effect size for those groups only
 			es_exp <- compute_CohensCliff_ESM(sam_exp[sam_exp$Group %in% sigGroupsPH,])
-	
-			print(es_exp)
 		
 			#merge and keep intersection (groups with Effect Size -- significant groups)
 			data_exp <- merge(mean_exp, es_exp, by= intersect(names(mean_exp), names(es_exp)))
@@ -231,26 +239,43 @@ collect_info_significantGroups <- function(sam_exp, trialID, genID, popSize, ver
 			data_exp <- rbind(data_exp, ans)
 			data_exp <- data_exp[order(data_exp$Value),]
 		
-			ind_ori <- which(data_exp$Group=="Original",)
-	
 			meu_original <- data_exp[data_exp$Group=='Original', 'Value']
 
-			#print best alternative for this generation:
-			data_exp <- data_exp[order(data_exp$Cliff.estimate),]
-			group1 <- as.character(data_exp[1, 'Group'])
-			meu_group1 <- as.double(data_exp[1, 'Value'])
 			es1 <- as.double(data_exp[1, 'Cliff.estimate'])
-			mges1 <- as.character(data_exp[1, 'Cliff.magnitude'])
+			mean_exp <- mean_exp[order(mean_exp$Value),]	
 			
+			cat(paste('Effect Size: ',es1,"\n",sep=""))
+			
+			# if significant solution is worse than original 
+			if(is.na(es1) || es1 > 0){
+				es1 <- as.double(0.1) # default effect_size for not significant solution
+				group1 <- paste(as.character(mean_exp[1, 'Group']),"**", sep="")
+				meu_group1 <- as.double(mean_exp[1, 'Value'])
+				mges1 <- "NA"
+			}else{
+				#print best alternative for this generation:
+				data_exp <- data_exp[order(data_exp$Cliff.estimate),]
+				group1 <- as.character(data_exp[1, 'Group'])
+				meu_group1 <- as.double(data_exp[1, 'Value'])
+				mges1 <- as.character(data_exp[1, 'Cliff.magnitude'])
+			}
+				
 			data_g1 <- data.frame(Gen=genID, Group=group1, EffectSize=es1, Magnitude=mges1, MEU_Group=meu_group1, MEU_Original=meu_original, stringsAsFactors=FALSE)
-			#print(data_g1)
-			#cat("\n")
 			
 			if(nrow(es_exp)>1){
-				group2 <- as.character(data_exp[2, 'Group'])
-				meu_group2 <- as.double(data_exp[2, 'Value'])
 				es2 <- as.double(data_exp[2, 'Cliff.estimate'])
-				mges2 <- as.character(data_exp[2, 'Cliff.magnitude'])
+				
+				# if significant solution is worse than original 
+				if(is.na(es2) || es2 > 0){
+					es2 <- as.double(0.1) # default effect_size for not significant solution
+					group2 <- paste(as.character(mean_exp[2, 'Group']), "**", sep="")
+					meu_group2 <- as.double(mean_exp[2, 'Value'])
+					mges2 <- "NA"
+				}else{
+					group2 <- as.character(data_exp[2, 'Group'])
+					meu_group2 <- as.double(data_exp[2, 'Value'])
+					mges2 <- as.character(data_exp[2, 'Cliff.magnitude'])
+				}
 				
 				data_g2 <- data.frame(Gen=genID, Group=group2, EffectSize=es2, Magnitude=mges2, MEU_Group=meu_group2, MEU_Original=meu_original, stringsAsFactors=FALSE)
 				#print(data_g2)
@@ -264,8 +289,33 @@ collect_info_significantGroups <- function(sam_exp, trialID, genID, popSize, ver
 			
 		}else{ # no significant difference between solutions and orginal
 			cat("RETURNING ROW OF NO SIGNIFICANT DIFFERENCES: \n")
-			data <- data.frame(Gen=genID, Group="No significant differences", EffectSize="NA", Magnitude="NA", MEU_Group="NA", MEU_Original="NA", stringsAsFactors=FALSE)
-			return(data)
+			# select best solutions as those having the lower MEU value
+			mean_exp <- mean_exp[order(mean_exp$Value),]	
+			meu_original <- mean_exp[mean_exp$Group=='Original', 'Value']
+
+			#print best alternative for this generation:
+			group1 <- paste(as.character(mean_exp[1, 'Group']),"**", sep="")
+			meu_group1 <- as.double(mean_exp[1, 'Value'])
+			es1 <- as.double(0.1)
+			mges1 <- "NA"
+			
+			data_g1 <- data.frame(Gen=genID, Group=group1, EffectSize=es1, Magnitude=mges1, MEU_Group=meu_group1, MEU_Original=meu_original, stringsAsFactors=FALSE)
+			
+			if(nrow(mean_exp)>1){
+				group2 <- paste(as.character(mean_exp[2, 'Group']), "**", sep="")
+				meu_group2 <- as.double(mean_exp[2, 'Value'])
+				es2 <- as.double(0.1)
+				mges2 <- "NA"
+				
+				data_g2 <- data.frame(Gen=genID, Group=group2, EffectSize=es2, Magnitude=mges2, MEU_Group=meu_group2, MEU_Original=meu_original, stringsAsFactors=FALSE)
+				#print(data_g2)
+				data <- data.frame(row.names=NULL, stringsAsFactors=FALSE)
+				data <- rbind(data, data_g1, data_g2)
+				return(data)
+
+			}else{
+				return(data_g1)
+			}
 		}
 }
 
