@@ -3,19 +3,21 @@
 # How many times the gGA algorithm was run for the given numGen
 file_data <- "data_st.csv"
 data_gga <- read.csv(file=file_data, row.names=NULL, fill=TRUE)
-data_gga <- data_gga[,c("Group", "Value")]
 
+data_gga <- data_gga[,c("Group", "Value")]
 numRuns <-3 
 samplesPerSol <- 15
 popSize <- 50
 numMaxEval <- 5000
 verbose = TRUE
 rows_pop <- samplesPerSol*(popSize+1)
+numGen <- (numMaxEval/popSize)
+numPop <- numGen+1
 
 # collect data for each run that the GA was run in the experiment
 # data_gga <- data_st.csv file with all samples collected while GA experiment was runnning
 # numRuns: how many runs in total
-# #samplesPerSol: how many samples of energy usage were collected per solution
+# samplesPerSol: how many samples of energy usage were collected per solution
 # popSize: population size
 # numMaxEval: number of maximum evaluations allowed in each run of the GA alg.
 # verbose: TRUE to print info about function's tasks
@@ -24,7 +26,6 @@ rows_pop <- samplesPerSol*(popSize+1)
 collect_data_for_each_runGAAlgorithm <- function(data_gga, numRuns, samplesPerSol, popSize, numMaxEval, verbose){
 
 	numGen <- (numMaxEval/popSize)
-	#numGen <- ceiling(((numMaxEval-50)/(popSize-2)))
 	# rows per population
 	rows_pop <- samplesPerSol*(popSize+1)
 	# indices for all populations headers (Value)
@@ -43,11 +44,11 @@ collect_data_for_each_runGAAlgorithm <- function(data_gga, numRuns, samplesPerSo
 				end_ind <- ind_df_run[length(ind_df_run)]+rows_pop
 			}
 			else if(k > 1 && k < numRuns)	{
-				ind_df_run <- ind_df[(numGen*(k-1) +1):(numGen*(k)+1)] 
+				ind_df_run <- ind_df[(numGen*(k-1)+(k-1)):(numGen*k+(k-1))]
 				start_ind <- ind_df_run[1]+1
 				end_ind <- ind_df_run[length(ind_df_run)]+rows_pop
 			}else{
-				ind_df_run <- ind_df[(numGen*(k-1)+2):length(ind_df)]
+				ind_df_run <- ind_df[(numGen*(k-1)+(k-1)):length(ind_df)]
 				start_ind <- ind_df_run[1]+1
 				end_ind <- ind_df_run[length(ind_df_run)]+rows_pop
 			}
@@ -58,15 +59,15 @@ collect_data_for_each_runGAAlgorithm <- function(data_gga, numRuns, samplesPerSo
 			df_run <- df_run[-(which(df_run$Group=='Value')), ]
 			df_run <- droplevels(df_run)
 			df_run <- df_run[,c("Group", "Value")]
-			num_gen <- nrow(df_run)/rows_pop
+			num_pop <- nrow(df_run)/rows_pop
 	
 			if(verbose){
 				print(paste("For run ",k, ":", sep=""))
 				#print(ind_df_run)
 				cat(paste("indices for data_run: [", start_ind, ":", end_ind, "]", sep=""))
 				cat("\n")
-				cat("Number of generations in data of run: ")
-				cat(num_gen)
+				cat("Number of populations in data of run: ")
+				cat(num_pop)
 				cat("\n")
 			}
 	
@@ -81,24 +82,23 @@ collect_data_for_each_runGAAlgorithm <- function(data_gga, numRuns, samplesPerSo
 ### START FUNCTION ###
 
 # df_run: data set for a given run of the algorithm (csv file output of collect_data_for_each_runGAAlgorithm)
-# rows_pop: total rows expected per population (samplesPerSolution*(num_gen+1))
-# num_gen: total number of populations generated in generations including the initial population
+# rows_pop: total rows expected per population (samplesPerSol*(popSize+1))
+# numGen: total number of populations generated in each generation
 # popSize: size of each population (ga parameter)
 # best_sol: name of best solution found by algorithm for this run
-collect_generations_data <- function(df_run, rows_pop, num_gen, popSize, best_sol){
+collect_generations_data <- function(df_run, rows_pop, numGen, popSize, best_sol){
 	
 	track_best_sol = "Best Solution Tracking:\n";
-	s = 1 
-	e = rows_pop
 	table_summary <- data.frame(row.names=NULL, stringsAsFactors=FALSE)
-
-	for(pop in 1:num_gen){
+	total_pop <- numGen + 1
+	
+	for(pop in 1:total_pop){
 		cat(paste("Collect information for Generation: ", pop, "\n", sep=""))
 
+		s <- rows_pop*(pop-1) + 1
+		e <- rows_pop*pop
 		df_pop <- df_run[s:e,]
-		s <- s + rows_pop
-		e <- e + rows_pop
-		
+				
 		# clean up data frame for population:
 		df_pop <- droplevels(df_pop)
 		
@@ -111,9 +111,9 @@ collect_generations_data <- function(df_run, rows_pop, num_gen, popSize, best_so
 		# for each generation in the data of run: collect population's information:
 		data_pop <- collect_info_significantGroups(df_pop, pop, popSize, TRUE, table_summary)	
 		
-			cat("Printing best solutions: \n")
-			print(data_pop)
-			table_summary <- rbind(table_summary, data_pop)
+		cat("Printing best solutions: \n")
+		print(data_pop)
+		table_summary <- rbind(table_summary, data_pop)
 
 	}
 	
