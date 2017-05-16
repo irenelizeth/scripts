@@ -106,6 +106,7 @@ collect_generations_data <- function(df_run, rows_pop, numGen, popSize, best_sol
 		ind_bs <- which(mean_pop$Group==best_sol,)
 		if(length(ind_bs)>0){
 			track_best_sol <- cat(paste(track_best_sol, "\n ", "Gen.",pop, ") MEU Best Solution: ", mean_pop[ind_bs,2], sep=""))
+			cat(track_best_sol)
 		}
 		
 		# for each generation in the data of run: collect population's information:
@@ -281,6 +282,7 @@ collect_info_significantGroups <- function(sam_exp, genID, popSize, verbose, tab
 				#print(data_g2)
 				data <- data.frame(row.names=NULL, stringsAsFactors=FALSE)
 				data <- rbind(data, data_g1, data_g2)
+				data <- data[order(data$EffectSize, data$MEU_Group),]
 				return(data)
 
 			}else{
@@ -311,6 +313,7 @@ collect_info_significantGroups <- function(sam_exp, genID, popSize, verbose, tab
 				#print(data_g2)
 				data <- data.frame(row.names=NULL, stringsAsFactors=FALSE)
 				data <- rbind(data, data_g1, data_g2)
+				data <- data[order(data$EffectSize, data$MEU_Group),]
 				return(data)
 
 			}else{
