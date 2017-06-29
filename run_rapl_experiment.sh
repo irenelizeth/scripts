@@ -2,9 +2,10 @@
 
 USAGE="sudo ./run_rapl_experiment.sh"
 
-USER= # your user
+USER=greense # your user
 SLEEP=120 # number of seconds
 INIT_DATE=`date "+%m%d%y_%H%M%S"`
+RUN_PATH=$PWD
 
 LOG_BASE=$HOME/rapl_experiments_logs
 if [ ! -d "$LOG_BASE" ]; then
@@ -38,7 +39,7 @@ function run_ga() {
 }
 
 function notify() {
-    SUBJECT="Done with experiment $INIT_DATE"
+    SUBJECT="Done with experiment $INIT_DATE machine 28"
     
     # Email To ?
     EMAIL=""
@@ -47,7 +48,7 @@ function notify() {
     EMAILMESSAGE=$LOG_BASE/experiment_$INIT_DATE.txt
     
     # send an email using mail.py
-    ./mail.py "'$SUBJECT'" "$EMAIL" $EMAILMESSAGE
+    $RUN_PATH/mail.py "'$SUBJECT'" "$EMAIL" $EMAILMESSAGE
 }
 
 # init
@@ -57,6 +58,7 @@ disable_network | $LOG
 
 # running experiment
 run_ga 2>&1 | $LOG
+#run_ga
 
 # cleanup
 enable_network | $LOG
